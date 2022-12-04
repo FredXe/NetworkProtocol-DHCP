@@ -40,6 +40,7 @@ clean:
 run: all
 	./main
 
+# run this for testing code
 testrun:test
 	./test
 
