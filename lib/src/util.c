@@ -6,7 +6,8 @@
 #include <string.h>
 
 /**
- *	Convert string with format *.*.*.* into byte array
+ *	Convert string into byte array
+ *	@param ip_addr_str *.*.*.* format string
  */
 u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 	IP_ALLOC(ip_addr);
