@@ -3,7 +3,10 @@
 #include <stdio.h>
 
 int main() {
-	char str[20] = "192.168.1.1";
-	ip_addr_t *ip = string_to_ip_addr(str);
-	ip = ip;
+	char str[12] = "192.168.1.1";
+	u_int8_t *ip;
+	ip = string_to_ip_addr(str);
+	free(ip);
+	// u_int8_t test = 1;
+	// printf("%" PRIu8 "\n", test);
 }
