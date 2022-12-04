@@ -1,5 +1,7 @@
+# Main target
 NAME = main
 
+# Define compiler, flags, and dirs
 OBJDIR = build
 SRCDIR = src
 LIBDIR = lib/src
@@ -10,8 +12,8 @@ CFLAGS = -g -O2 -Wall -fsanitize=address
 LDFLAGS := -lpcap -fsanitize=address
 INCLUDES = -I $(SRCDIR) -I $(INCLUDEDIR)
 
-# SRCS = $(wildcard $(SRCDIR)/*.c)
 SRCS = $(SRCDIR)/main.c
+# SRCS = $(wildcard $(SRCDIR)/*.c)
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 LIB_SRCS = $(wildcard $(LIBDIR)/*.c)
 LIB_OBJS = $(LIB_SRCS:$(LIBDIR)/%.c=$(OBJDIR)/%.o)
@@ -41,7 +43,7 @@ clean:
 run: all
 	./main
 
-# run this for testing code
+# run 'makefile testrun' for test code
 testrun:test
 	./test
 
