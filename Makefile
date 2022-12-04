@@ -16,7 +16,7 @@ LIB_SRCS = $(wildcard $(LIBDIR)/*.c)
 LIB_OBJS = $(LIB_SRCS:$(LIBDIR)/%.c=$(OBJDIR)/%.o)
 TEST_OBJS = $(OBJDIR)/test.o
 
-.PHONY: all clean test
+.PHONY: all clean
 
 all: $(NAME)
 	@echo "Successfully built $(NAME)"
@@ -45,6 +45,3 @@ testrun:test
 
 test: $(TEST_OBJS) $(LIB_OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ 
-
-$(TEST_OBJS): $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
