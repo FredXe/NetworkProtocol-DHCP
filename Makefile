@@ -10,7 +10,8 @@ CFLAGS = -g -O2 -Wall -fsanitize=address
 LDFLAGS := -lpcap -fsanitize=address
 INCLUDES = -I $(SRCDIR) -I $(INCLUDEDIR)
 
-SRCS = $(wildcard $(SRCDIR)/*.c)
+# SRCS = $(wildcard $(SRCDIR)/*.c)
+SRCS = $(SRCDIR)/main.c
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 LIB_SRCS = $(wildcard $(LIBDIR)/*.c)
 LIB_OBJS = $(LIB_SRCS:$(LIBDIR)/%.c=$(OBJDIR)/%.o)
