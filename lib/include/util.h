@@ -3,6 +3,4 @@
 
 #include <stdlib.h>
 
-extern u_int8_t *string_to_ip_addr(char *ip_addr_str);
-
 #endif
