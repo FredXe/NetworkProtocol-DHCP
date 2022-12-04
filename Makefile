@@ -47,3 +47,6 @@ testrun:test
 
 test: $(TEST_OBJS) $(LIB_OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ 
+
+$(TEST_OBJS): $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
