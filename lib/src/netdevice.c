@@ -11,11 +11,14 @@ u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 	}
 
 	ETH_ALLOC(eth_addr);
+
+	// cutdown the word with stortok()
 	char delim[2] = ":";
 	char *token = strtok(eth_addr_str, delim);
+
 	int num_of_byte = 0;
 	while (token != NULL) {
-		/*
+		/**
 		 *	Return NULL if input string
 		 *	is too long
 		 */
@@ -25,7 +28,7 @@ u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 			goto err_return;
 		}
 
-		/*
+		/**
 		 *	Convert it using strtol in base hex,
 		 *	and cast it with u_int8_t form.
 		 */
@@ -37,6 +40,9 @@ u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 
 	return eth_addr;
 
+/**
+ *	return block for error exit
+ */
 err_return:
 	free(eth_addr);
 	return NULL;

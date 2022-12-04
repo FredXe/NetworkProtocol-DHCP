@@ -5,6 +5,9 @@
 
 #define ETH_ADDR_LEN 6
 
+/**
+ *	script for allocate an eth address
+ */
 #define ETH_ALLOC(addr) u_int8_t *addr = (u_int8_t *)calloc(ETH_ADDR_LEN, sizeof(u_int8_t))
 
 /**
