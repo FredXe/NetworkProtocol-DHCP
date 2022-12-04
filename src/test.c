@@ -8,6 +8,5 @@ int main() {
 	ip = string_to_ip_addr(str);
 	free(ip);
 
-	printf("test\n");
 	return 0;
 }
