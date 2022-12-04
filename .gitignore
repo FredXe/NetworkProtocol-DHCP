@@ -6,3 +6,4 @@ build/*
 
 # executable
 main
+test
