@@ -14,6 +14,8 @@
 #define NETDEVICE_ERROR		 -1
 #define NETDEVICE_ERROR_NULL NULL
 #define ETH_ADDR_LEN		 6
+#define MTU					 1500
+#define CAP_TIMEOUT			 100
 
 /**
  * Script for allocate an eth address
@@ -22,7 +24,7 @@
 
 typedef struct netdevice netdevice_t;
 typedef struct protocol protocol_t;
-typedef void (*netdevice_handler)(netdevice_t *netdevice, const byte packet, unsigned int length);
+typedef void (*netdevice_handler)(netdevice_t *netdevice, const byte *packet, unsigned int length);
 
 struct netdevice {
 	pcap_t *capture_handle;	  // Pcap capture handle
@@ -45,8 +47,12 @@ typedef struct {
 	two_bytes eth_type;			  // Ethertype
 } eth_hdr_t;					  // Ethernet header
 
+/*================
+ * Public Methods
+ *================*/
 extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
-
+extern netdevice_t *netdevice_open(const char *device_name, char *errbuf);
+extern void netdevice_close(netdevice_t *device);
 extern byte *string_to_eth_addr(char *eth_addr_str);
 
 #endif

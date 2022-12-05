@@ -98,12 +98,82 @@ err_out:
 }
 
 /**
+ * Open a pcap capture interface with promiscuous mode,
+ * and set it into non-blocking mode
+ * @param device_name device name select
+ * @param errbuf errbuf will be fill if there's error
+ * @return Netdevice, NETDEVICE_ERROR_NULL if error
+ */
+netdevice_t *netdevice_open(const char *device_name, char *errbuf) {
+	netdevice_t *device = (netdevice_t *)calloc(1, sizeof(netdevice_t));
+	device->proto_list = NULL;
+
+	/**
+	 * Open a pcap capture handle by pcap_open_live(),
+	 * free resources and return NETDEVICE_ERROR_NULL
+	 * if open failure
+	 */
+	if ((device->capture_handle = pcap_open_live(device_name, MTU, PCAP_OPENFLAG_PROMISCUOUS,
+												 CAP_TIMEOUT, errbuf)) == NULL) {
+		fprintf(stderr, "%s:%d in %s(): pcap_open_live(): open pcap capture handle failed\n",
+				__FILE__, __LINE__, __func__);
+		goto err_out;
+	}
+
+	/**
+	 * Set the capture device into non-blocking mode
+	 */
+	if (pcap_setnonblock(device->capture_handle, 1, errbuf) == PCAP_ERROR) {
+		fprintf(stderr, "%s:%d in %s(): pcap_setnonblock(): set non-blocking mode failed\n",
+				__FILE__, __LINE__, __func__);
+		goto err_out;
+	}
+
+	return device;
+
+/**
+ * Label for exit with error.
+ * Free resources and return NETDEVICE_ERROR_NULL
+ */
+err_out:
+	netdevice_close(device);
+	return NETDEVICE_ERROR_NULL;
+}
+
+/**
+ * Free all the resources of netdevice
+ */
+void netdevice_close(netdevice_t *device) {
+	protocol_t *protocol;		// Protocol_t* to go through protocol list
+	protocol_t *tmp_protocol;	// Protocol_t going to be free
+
+	/**
+	 * Free the whole protocol list
+	 */
+	for (protocol = device->proto_list; protocol != NULL;) {
+		tmp_protocol = protocol;
+		protocol = protocol->next;
+		free(tmp_protocol);
+	}
+
+	// close capture handle in device
+	pcap_close(device->capture_handle);
+	// free device itself
+	free(device);
+
+	return;
+}
+
+/**
  * Convert string into byte array
  * @param eth_addr_str **:**:**:**:**:** format string
  * @return byte* point to eth_addr.
  * NETDEVICE_ERROR_NULL if error
  */
 byte *string_to_eth_addr(char *eth_addr_str) {
+	/**
+	 * Return NETDEVICE_ERROR_NULL if length of MAC address is too long
+	 */
 	if ((int)strlen(eth_addr_str) > 17) {
 		fprintf(stderr, "%s:%d in %s(): length of eth_addr_str out of range\n", __FILE__, __LINE__,
 				__func__);
@@ -112,7 +182,7 @@ byte *string_to_eth_addr(char *eth_addr_str) {
 
 	ETH_ALLOC(eth_addr);
 
-	// cut up the word with stortok()
+	// Cut up the word with stortok()
 	char delim[2] = ":";
 	char *token = strtok(eth_addr_str, delim);
 

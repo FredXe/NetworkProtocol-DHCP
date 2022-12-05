@@ -20,13 +20,18 @@ int main() {
 	byte *ip = string_to_ip_addr(ip_str);
 
 	char dev_name[20];
-	netdevice_getdevice(0, dev_name);
+	char errbuf[PCAP_ERRBUF_SIZE];
+	netdevice_getdevice(1, dev_name);
+	printf("%s\n", dev_name);
+	netdevice_t *device;
+	device = netdevice_open(dev_name, errbuf);
 
+	// device->capture_handle;
 	// for (int i = 0; i < ETH_ADDR_LEN; i++) {
 	// 	printf("%" PRIu8 ":", eth[i]);
 	// }
-	printf("%s\n", dev_name);
 	// free(dev_name);
+	netdevice_close(device);
 	free(eth);
 	free(ip);
 

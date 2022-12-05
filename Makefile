@@ -41,11 +41,11 @@ clean:
 	- $(RM) -rf $(OBJDIR)
 
 run: all
-	./main
+	sudo ./main
 
 # run 'makefile testrun' for test code
 testrun:test
-	./test
+	sudo ./test
 
 test: $(TEST_OBJS) $(LIB_OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ 
