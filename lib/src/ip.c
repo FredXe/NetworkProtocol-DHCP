@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * Convert string into byte array
+ * @param ip_addr_str *.*.*.* format string
+ * @return u_int8_t* point to ip_addr.
+ * NULL if error
+ */
 u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 	IP_ALLOC(ip_addr);
 

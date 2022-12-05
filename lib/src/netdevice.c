@@ -4,6 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * Get device from pcap_findalldevs(),
+ * than select one of it.
+ * @param dev_sel_no '0' - select from terminal.
+ * 'non0' - select directly from parameter
+ * @param dev_name
+ * @return 0 if success.
+ * NETDEVICE_ERROR if error
+ */
 int netdevice_getdevice(const int define_n, char *dev_name) {
 	pcap_if_t *all_dev;
 
@@ -88,6 +97,12 @@ err_out:
 	return NETDEVICE_ERROR;
 }
 
+/**
+ * Convert string into byte array
+ * @param eth_addr_str **:**:**:**:**:** format string
+ * @return u_int8_t* point to eth_addr.
+ * NULL if error
+ */
 u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 	if ((int)strlen(eth_addr_str) > 17) {
 		fprintf(stderr, "%s:%d in %s(): length of eth_addr_str out of range\n", __FILE__, __LINE__,
