@@ -3,7 +3,9 @@
 
 #include <stdlib.h>
 
-#define IP_ADDR_LEN 4
+#define IP_ERROR	  -1
+#define IP_ERROR_NULL NULL
+#define IP_ADDR_LEN	  4
 
 /**
  * Script for allocate an IP address

@@ -8,8 +8,9 @@
 
 #include <stdlib.h>
 
-#define NETDEVICE_ERROR -1
-#define ETH_ADDR_LEN	6
+#define NETDEVICE_ERROR		 -1
+#define NETDEVICE_ERROR_NULL NULL
+#define ETH_ADDR_LEN		 6
 
 /**
  * Script for allocate an eth address
@@ -26,6 +27,7 @@ typedef struct {
 } eth_hdr_t;						  // Ethernet header
 
 int netdevice_getdevice(const int dev_sel_no, char *dev_name);
+
 u_int8_t *string_to_eth_addr(char *eth_addr_str);
 
 #endif

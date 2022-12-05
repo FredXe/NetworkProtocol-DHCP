@@ -101,13 +101,13 @@ err_out:
  * Convert string into byte array
  * @param eth_addr_str **:**:**:**:**:** format string
  * @return u_int8_t* point to eth_addr.
- * NULL if error
+ * NETDEVICE_ERROR_NULL if error
  */
 u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 	if ((int)strlen(eth_addr_str) > 17) {
 		fprintf(stderr, "%s:%d in %s(): length of eth_addr_str out of range\n", __FILE__, __LINE__,
 				__func__);
-		return NULL;
+		return NETDEVICE_ERROR_NULL;
 	}
 
 	ETH_ALLOC(eth_addr);
@@ -142,9 +142,9 @@ u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 
 /**
  * Label for error exit.
- * Free allocated var and return NULL
+ * Free allocated var and return NETDEVICE_ERROR_NULL
  */
 err_out:
 	free(eth_addr);
-	return NULL;
+	return NETDEVICE_ERROR_NULL;
 }

@@ -1,7 +1,7 @@
 /**
  * @file test.c
  * Program to test something
- * >_ 'make runtest'
+ * to >_ 'make runtest'
  */
 
 #include "ip.h"

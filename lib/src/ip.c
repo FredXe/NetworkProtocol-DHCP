@@ -7,7 +7,7 @@
  * Convert string into byte array
  * @param ip_addr_str *.*.*.* format string
  * @return u_int8_t* point to ip_addr.
- * NULL if error
+ * IP_ERROR_NULL if error
  */
 u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 	IP_ALLOC(ip_addr);
@@ -49,9 +49,9 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 
 /**
  * Label for error exit.
- * Free allocated var and return NULL
+ * Free allocated var and return IP_ERROR_NULL
  */
 err_out:
 	free(ip_addr);
-	return NULL;
+	return IP_ERROR_NULL;
 }
