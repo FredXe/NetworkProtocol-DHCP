@@ -1,3 +1,9 @@
+/**
+ * @file test.c
+ * Program to test something
+ * >_ 'make runtest'
+ */
+
 #include "ip.h"
 #include "netdevice.h"
 #include "util.h"
