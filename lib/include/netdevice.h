@@ -14,7 +14,7 @@
 int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 
 /**
- * @brief Convert string into byte array
+ * Convert string into byte array
  *
  * @param eth_addr_str **:**:**:**:**:** format string
  * @return u_int8_t* point to eth_addr,
