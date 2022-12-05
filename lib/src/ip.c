@@ -12,7 +12,7 @@
 byte *string_to_ip_addr(char *ip_addr_str) {
 	IP_ALLOC(ip_addr);
 
-	// cut up the word with strtok()
+	// Cut up the word with strtok()
 	char delim[2] = ".";
 	char *token = strtok(ip_addr_str, delim);
 

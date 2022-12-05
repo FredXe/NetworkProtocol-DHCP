@@ -105,7 +105,10 @@ err_out:
  * @return Netdevice, NETDEVICE_ERROR_NULL if error
  */
 netdevice_t *netdevice_open(const char *device_name, char *errbuf) {
+	// Allocate space for device
 	netdevice_t *device = (netdevice_t *)calloc(1, sizeof(netdevice_t));
+
+	// Init protocol list by point it into NULL
 	device->proto_list = NULL;
 
 	/**
