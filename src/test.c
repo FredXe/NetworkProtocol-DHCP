@@ -16,8 +16,8 @@ int main() {
 	char eth_str[20] = "ff:7b:d2:19:e8:69";
 	char ip_str[20] = "192.168.1.1";
 
-	u_int8_t *eth = string_to_eth_addr(eth_str);
-	u_int8_t *ip = string_to_ip_addr(ip_str);
+	byte *eth = string_to_eth_addr(eth_str);
+	byte *ip = string_to_ip_addr(ip_str);
 
 	char dev_name[20];
 	netdevice_getdevice(0, dev_name);

@@ -6,7 +6,10 @@
 #ifndef __NETDEVICE_H__
 #define __NETDEVICE_H__
 
+#include <pcap/pcap.h>
 #include <stdlib.h>
+
+#include "types.h"
 
 #define NETDEVICE_ERROR		 -1
 #define NETDEVICE_ERROR_NULL NULL
@@ -15,19 +18,35 @@
 /**
  * Script for allocate an eth address
  */
-#define ETH_ALLOC(addr) u_int8_t *addr = (u_int8_t *)calloc(ETH_ADDR_LEN, sizeof(u_int8_t))
+#define ETH_ALLOC(addr) byte *addr = (byte *)calloc(ETH_ADDR_LEN, sizeof(byte))
+
+typedef struct netdevice netdevice_t;
+typedef struct protocol protocol_t;
+typedef void (*netdevice_handler)(netdevice_t *netdevice, const byte packet, unsigned int length);
+
+struct netdevice {
+	pcap_t *capture_handle;	  // Pcap capture handle
+	protocol_t *proto_list;	  // Head of rotocol list
+};							  // Resources of netdevice
+
+struct protocol {
+	two_bytes eth_type;			  // Protocol's ethertype
+	netdevice_handler callback;	  // Callback functoin
+	netdevice_t *netdevice;		  // Protocol's netdevice
+	protocol_t *next;			  // Next node
+};								  // Protocol list map ethertype to callback function
 
 /*=================
  * Protocol Format
  *=================*/
 typedef struct {
-	u_int8_t eth_dst[ETH_ADDR_LEN];	  // Destination MAC address
-	u_int8_t eth_src[ETH_ADDR_LEN];	  // Source MAC address
-	u_int16_t eth_type;				  // Ethertype
-} eth_hdr_t;						  // Ethernet header
+	byte eth_dst[ETH_ADDR_LEN];	  // Destination MAC address
+	byte eth_src[ETH_ADDR_LEN];	  // Source MAC address
+	two_bytes eth_type;			  // Ethertype
+} eth_hdr_t;					  // Ethernet header
 
-int netdevice_getdevice(const int dev_sel_no, char *dev_name);
+extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 
-u_int8_t *string_to_eth_addr(char *eth_addr_str);
+extern byte *string_to_eth_addr(char *eth_addr_str);
 
 #endif

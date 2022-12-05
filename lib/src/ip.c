@@ -6,10 +6,10 @@
 /**
  * Convert string into byte array
  * @param ip_addr_str *.*.*.* format string
- * @return u_int8_t* point to ip_addr.
+ * @return byte* point to ip_addr.
  * IP_ERROR_NULL if error
  */
-u_int8_t *string_to_ip_addr(char *ip_addr_str) {
+byte *string_to_ip_addr(char *ip_addr_str) {
 	IP_ALLOC(ip_addr);
 
 	// cut up the word with strtok()
@@ -32,10 +32,10 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 		/**
 		 * Convert it using atoi method
 		 * when its valid,
-		 * and restrict it with u_int8_t form.
+		 * and restrict it with byte form.
 		 */
 		if (atoi(token) <= 256) {
-			ip_addr[num_of_byte] = (u_int8_t)atoi(token);
+			ip_addr[num_of_byte] = (byte)atoi(token);
 		} else {
 			fprintf(stderr, "%s:%d in %s(): ip addr should be <= 256\n", __FILE__, __LINE__,
 					__func__);

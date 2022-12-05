@@ -100,10 +100,10 @@ err_out:
 /**
  * Convert string into byte array
  * @param eth_addr_str **:**:**:**:**:** format string
- * @return u_int8_t* point to eth_addr.
+ * @return byte* point to eth_addr.
  * NETDEVICE_ERROR_NULL if error
  */
-u_int8_t *string_to_eth_addr(char *eth_addr_str) {
+byte *string_to_eth_addr(char *eth_addr_str) {
 	if ((int)strlen(eth_addr_str) > 17) {
 		fprintf(stderr, "%s:%d in %s(): length of eth_addr_str out of range\n", __FILE__, __LINE__,
 				__func__);
@@ -130,9 +130,9 @@ u_int8_t *string_to_eth_addr(char *eth_addr_str) {
 
 		/**
 		 * Convert it using strtol in base hex,
-		 * and cast it with u_int8_t form.
+		 * and cast it with byte form.
 		 */
-		eth_addr[num_of_byte] = (u_int8_t)strtol(token, NULL, 16);
+		eth_addr[num_of_byte] = (byte)strtol(token, NULL, 16);
 
 		token = strtok(NULL, delim);
 		num_of_byte++;
