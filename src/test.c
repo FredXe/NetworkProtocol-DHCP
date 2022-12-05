@@ -13,10 +13,14 @@ int main() {
 	u_int8_t *eth = string_to_eth_addr(eth_str);
 	u_int8_t *ip = string_to_ip_addr(ip_str);
 
+	char dev_name[20];
+	netdevice_getdevice(0, dev_name);
+
 	// for (int i = 0; i < ETH_ADDR_LEN; i++) {
 	// 	printf("%" PRIu8 ":", eth[i]);
 	// }
-	printf("\n");
+	printf("%s\n", dev_name);
+	// free(dev_name);
 	free(eth);
 	free(ip);
 

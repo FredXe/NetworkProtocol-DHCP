@@ -6,7 +6,7 @@
 u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 	IP_ALLOC(ip_addr);
 
-	// cutdown the word with strtok()
+	// cut up the word with strtok()
 	char delim[2] = ".";
 	char *token = strtok(ip_addr_str, delim);
 
@@ -20,7 +20,7 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 		if (num_of_byte >= IP_ADDR_LEN) {
 			fprintf(stderr, "%s:%d in %s(): length of ip_addr_str out of range\n", __FILE__,
 					__LINE__, __func__);
-			goto err_return;
+			goto err_out;
 		}
 
 		/**
@@ -33,7 +33,7 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 		} else {
 			fprintf(stderr, "%s:%d in %s(): ip addr should be <= 256\n", __FILE__, __LINE__,
 					__func__);
-			goto err_return;
+			goto err_out;
 		}
 		token = strtok(NULL, delim);
 		num_of_byte++;
@@ -41,7 +41,11 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 
 	return ip_addr;
 
-err_return:
+/**
+ * Label for error exit.
+ * Free allocated var and return NULL
+ */
+err_out:
 	free(ip_addr);
 	return NULL;
 }
