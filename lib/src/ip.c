@@ -10,12 +10,12 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 	char delim[2] = ".";
 	char *token = strtok(ip_addr_str, delim);
 
-	int num_of_byte = 0;
+	int num_of_byte = 0;   // count the number of bytes for validate
 
 	while (token != NULL) {
 		/**
-		 *	Return NULL if input string
-		 *	is too long
+		 * Return NULL if input string
+		 * is too long
 		 */
 		if (num_of_byte >= IP_ADDR_LEN) {
 			fprintf(stderr, "%s:%d in %s(): length of ip_addr_str out of range\n", __FILE__,
@@ -24,9 +24,9 @@ u_int8_t *string_to_ip_addr(char *ip_addr_str) {
 		}
 
 		/**
-		 *	Convert it using atoi method
-		 *	when its valid,
-		 *	and restrict it with u_int8_t form.
+		 * Convert it using atoi method
+		 * when its valid,
+		 * and restrict it with u_int8_t form.
 		 */
 		if (atoi(token) <= 256) {
 			ip_addr[num_of_byte] = (u_int8_t)atoi(token);
