@@ -257,8 +257,40 @@ int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const by
 	return 0;
 }
 
+/**
+ * Process all the packets in one buffer using pcap_dispatch(),
+ * and register the callback function of netdevice
+ * @param netdevice Netdevice that capture packets from
+ * @return The number of packets processed on seccess;
+ * NETDEVICE_ERROR on failure
+ */
 int netdevice_rx(netdevice_t *netdevice) {
-	// pcap_dispatch();
+	// Packet count that pcap_dispatch() returns
+	int pkt_cnt = 0;
+
+	/**
+	 * Set cnt argument to let pcap_dispatch() to
+	 * process all the packets in one buffer
+	 */
+	pkt_cnt = pcap_dispatch(netdevice->capture_handle, -1, _capture, (u_char *)netdevice);
+
+	/**
+	 * Return NETDEVICE_ERROR if there's error
+	 * and print it to stderr
+	 */
+	if (pkt_cnt == PCAP_ERROR) {
+		fprintf(stderr, "%s:%d in %s(): pcap_dispatch(): %s\n", __FILE__, __LINE__, __func__,
+				pcap_geterr(netdevice->capture_handle));
+		return NETDEVICE_ERROR;
+	} else if (pkt_cnt == PCAP_ERROR_BREAK) {
+		fprintf(stderr,
+				"%s:%d in %s(): pcap_dispatch(): the loop terminated due to a call to "
+				"pcap_breakloop() before any packets were processed\n",
+				__FILE__, __LINE__, __func__);
+		return NETDEVICE_ERROR;
+	}
+
+	return pkt_cnt;
 }
 
 /**
