@@ -7,6 +7,42 @@
 #include "util.h"
 
 /**
+ * Capture handle of netdevice, resolve the Ethernet header
+ * and passing payload to upper matching protocol.
+ * @param device_u_char	netdevice_t in u_char form
+ * @param header Pcap packet header
+ * @param eth_frame Ethernet frame
+ */
+static void _capture(u_char *device_u_char, const pcap_pkthdr_t *header, const byte *eth_frame) {
+	/**
+	 * Cast netdevice_u_char with netdevice_t from
+	 * the user that pcap_dispatch() registered
+	 */
+	netdevice_t *netdevice = (netdevice_t *)device_u_char;
+
+	const eth_hdr_t *eth_hdr = (eth_hdr_t *)eth_frame;	   // Point out the Ethernet header
+	const byte *payload = eth_frame + sizeof(eth_hdr_t);   // Point out the payload
+
+	int frame_len = header->caplen;					   // Length of frame
+	int payload_len = frame_len - sizeof(eth_hdr_t);   // Length of Payload
+
+	/**
+	 * Go through the protocol list to
+	 * find the matching protocol
+	 */
+	protocol_t *tmp_protocol = netdevice->proto_list;	// Iterator of protocol list
+	while (tmp_protocol != NULL) {
+		if (eth_hdr->eth_type == tmp_protocol->eth_type) {
+			tmp_protocol->callback(netdevice, payload, payload_len);
+			break;
+		}
+		tmp_protocol = tmp_protocol->next;
+	}
+
+	return;
+}
+
+/**
  * Get device from pcap_findalldevs(),
  * than select one of it.
  * @param dev_sel_no '0' - select from terminal.
@@ -179,7 +215,7 @@ int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
  * @return 0 on seccuss, NETDEVICE_ERROR on error
  */
 int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
-				   const unsigned int payload_len) {
+				   const u_int payload_len) {
 	/**
 	 * Return NETDEVICE_ERROR if length of
 	 * payload exceed MTU
@@ -219,6 +255,10 @@ int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const by
 	}
 
 	return 0;
+}
+
+int netdevice_rx(netdevice_t *netdevice) {
+	// pcap_dispatch();
 }
 
 /**
