@@ -30,13 +30,8 @@ int main() {
 	eth_hdr->eth_type = 0x0608;
 	byte pay[10];
 	netdevice_xmit(device, eth_hdr, pay, 0);
-	for (int i = 0; i < ETH_ADDR_LEN; i++) {
-		printf("%x:", eth_hdr->eth_dst[i]);
-	}
-	printf("\n");
-	for (int i = 0; i < ETH_ADDR_LEN; i++) {
-		printf("%" PRIu8 ":", eth_hdr->eth_src[i]);
-	}
+	netdevice_handler callback_test;
+	netdevice_add_protocol(device, 0x0608, callback_test);
 	netdevice_close(device);
 	free(eth_hdr);
 	// free(dst_eth);

@@ -146,6 +146,31 @@ err_out:
 }
 
 /**
+ * API for upper layer to sign up the protocol's
+ * Ethertype and the callback function
+ * @param netdevice Specify the netdevice
+ * @param eth_type Ethertype of new protocol
+ * @param callback Callback function's pointer
+ * @return 0 on seccess
+ */
+int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
+						   netdevice_handler callback) {
+	// Allocate memory for new protocol node
+	protocol_t *new_protocol = (protocol_t *)calloc(1, sizeof(protocol_t));
+
+	// Mapping member with arguments
+	new_protocol->eth_type = eth_type;
+	new_protocol->callback = callback;
+	new_protocol->netdevice = netdevice;
+
+	// Insert new protocol to the dead of the list
+	new_protocol->next = netdevice->proto_list;
+	netdevice->proto_list = new_protocol;
+
+	return 0;
+}
+
+/**
  * Send a Ethernet frame out using pcap_sendpacket()
  * @param device To specify the pcap capture handle
  * @param eth_hdr Ethernet header

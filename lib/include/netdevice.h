@@ -24,7 +24,7 @@ typedef void (*netdevice_handler)(netdevice_t *netdevice, const byte *packet, un
 
 struct netdevice {
 	pcap_t *capture_handle;	  // Pcap capture handle
-	protocol_t *proto_list;	  // Head of rotocol list
+	protocol_t *proto_list;	  // Head of protocol list
 };							  // Resources of netdevice
 
 struct protocol {
@@ -48,6 +48,8 @@ typedef struct {
  *================*/
 extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 extern netdevice_t *netdevice_open(const char *device_name, char *errbuf);
+extern int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
+								  netdevice_handler callback);
 extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
 						  const unsigned int payload_len);
 extern void netdevice_close(netdevice_t *device);
