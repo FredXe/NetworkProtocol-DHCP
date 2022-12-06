@@ -145,6 +145,14 @@ err_out:
 	return NETDEVICE_ERROR_NULL;
 }
 
+/**
+ * Send a Ethernet frame out using pcap_sendpacket()
+ * @param device To specify the pcap capture handle
+ * @param eth_hdr Ethernet header
+ * @param payload Ethernet payload
+ * @param payload_len Length of payload
+ * @return 0 on seccuss, NETDEVICE_ERROR on error
+ */
 int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
 				   const unsigned int payload_len) {
 	/**
