@@ -14,6 +14,6 @@
  */
 #define IP_ALLOC(ip) byte *ip = (byte *)calloc(IP_ADDR_LEN, sizeof(byte))
 
-extern byte *string_to_ip_addr(char *ip_addr_str);
+extern byte *string_to_ip_addr(const char *ip_addr_str);
 
 #endif

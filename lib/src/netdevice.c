@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "util.h"
+
 /**
  * Get device from pcap_findalldevs(),
  * than select one of it.
@@ -143,6 +145,49 @@ err_out:
 	return NETDEVICE_ERROR_NULL;
 }
 
+int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
+				   const unsigned int payload_len) {
+	/**
+	 * Return NETDEVICE_ERROR if length of
+	 * payload exceed MTU
+	 */
+	if (payload_len > MTU) {
+		fprintf(stderr, "%s:%d in %s(): length of payload exceed MTU\n", __FILE__, __LINE__,
+				__func__);
+		return NETDEVICE_ERROR;
+	}
+
+	const int ETH_HDR_LEN = sizeof(eth_hdr_t);	 // Const Ethernet header length
+	int frame_len = ETH_HDR_LEN + payload_len;	 // Length of whole frame
+	// Ethernet Frame buffer with size greater than MIN_ETH_LEN
+	byte buf[MAX(MIN_ETH_LEN, frame_len)];
+
+	/**
+	 * Build the Ethernet frame into buf
+	 */
+	memcpy(buf, eth_hdr, ETH_HDR_LEN);				   // Add header
+	memcpy(buf + ETH_HDR_LEN, payload, payload_len);   // Add payload
+
+	// Since frame_len < 60, we need to fill the leftover into 0;
+	if (frame_len < MIN_ETH_LEN) {
+		memset(buf + frame_len, 0, MIN_ETH_LEN - frame_len);
+		// Now, frame_len is MIN_ETH_LEN = 60
+		frame_len = 60;
+	}
+
+	/**
+	 * Send packet with pcap_sendpacket(),
+	 * return NETDEVICE_ERROR on error
+	 */
+	if (pcap_sendpacket(device->capture_handle, buf, frame_len) == PCAP_ERROR) {
+		fprintf(stderr, "%s:%d in %s(): pcap_sendpacket(): %s\n", __FILE__, __LINE__, __func__,
+				pcap_geterr(device->capture_handle));
+		return NETDEVICE_ERROR;
+	}
+
+	return 0;
+}
+
 /**
  * Free all the resources of netdevice
  */
@@ -173,20 +218,29 @@ void netdevice_close(netdevice_t *device) {
  * @return byte* point to eth_addr.
  * NETDEVICE_ERROR_NULL if error
  */
-byte *string_to_eth_addr(char *eth_addr_str) {
+byte *string_to_eth_addr(const char *eth_addr_str_in) {
 	/**
 	 * Return NETDEVICE_ERROR_NULL if length of MAC address is too long
 	 */
-	if ((int)strlen(eth_addr_str) > 17) {
+	if ((int)strlen(eth_addr_str_in) > 17) {
 		fprintf(stderr, "%s:%d in %s(): length of eth_addr_str out of range\n", __FILE__, __LINE__,
 				__func__);
 		return NETDEVICE_ERROR_NULL;
 	}
 
+	/**
+	 * Since we're using strtok() later,
+	 * we have to store the input const char[]
+	 * into a char[].
+	 */
+	char eth_addr_str[18];
+	strcpy(eth_addr_str, eth_addr_str_in);
+	// strcpy(eth_addr_str)
+
 	ETH_ALLOC(eth_addr);
 
 	// Cut up the word with stortok()
-	char delim[2] = ":";
+	const char delim[2] = ":";
 	char *token = strtok(eth_addr_str, delim);
 
 	int num_of_byte = 0;

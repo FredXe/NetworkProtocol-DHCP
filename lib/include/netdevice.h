@@ -1,8 +1,3 @@
-/**
- * @file netdevice.h
- * Define the protocol and tools below 2nd layer:
- * Ethernet, link device etc.
- */
 #ifndef __NETDEVICE_H__
 #define __NETDEVICE_H__
 
@@ -15,6 +10,7 @@
 #define NETDEVICE_ERROR_NULL NULL
 #define ETH_ADDR_LEN		 6
 #define MTU					 1500
+#define MIN_ETH_LEN			 60
 #define CAP_TIMEOUT			 100
 
 /**
@@ -52,7 +48,9 @@ typedef struct {
  *================*/
 extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 extern netdevice_t *netdevice_open(const char *device_name, char *errbuf);
+extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
+						  const unsigned int payload_len);
 extern void netdevice_close(netdevice_t *device);
-extern byte *string_to_eth_addr(char *eth_addr_str);
+extern byte *string_to_eth_addr(const char *eth_addr_str);
 
 #endif

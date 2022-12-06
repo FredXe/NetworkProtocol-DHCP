@@ -9,11 +9,19 @@
  * @return byte* point to ip_addr.
  * IP_ERROR_NULL if error
  */
-byte *string_to_ip_addr(char *ip_addr_str) {
+byte *string_to_ip_addr(const char *ip_addr_str_in) {
 	IP_ALLOC(ip_addr);
 
+	/**
+	 * Since we're using strtok() later,
+	 * we have to store the input const char[]
+	 * into a char[].
+	 */
+	char ip_addr_str[16];
+	strcpy(ip_addr_str, ip_addr_str_in);
+
 	// Cut up the word with strtok()
-	char delim[2] = ".";
+	const char delim[2] = ".";
 	char *token = strtok(ip_addr_str, delim);
 
 	int num_of_byte = 0;   // count the number of bytes for validate
