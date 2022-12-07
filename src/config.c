@@ -1,3 +1,0 @@
-// ARP
-#define DEBUG_ARP_REQUEST 0
-#define DEBUG_ARP_REPLY	  0

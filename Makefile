@@ -6,9 +6,11 @@ OBJDIR = build
 SRCDIR = src
 LIBDIR = lib/src
 INCLUDEDIR = lib/include
+CONFIG = config
 
 CC = gcc
-CFLAGS = -g -O2 -Wall -fsanitize=address
+FLAGS = $(shell cat $(CONFIG) | awk '/^[^\#]+$$/ {print "-D"$$0}' ORS=' ')
+CFLAGS = -g -O2 -Wall -fsanitize=address $(FLAGS)
 LDFLAGS := -lpcap -fsanitize=address
 INCLUDES = -I $(SRCDIR) -I $(INCLUDEDIR)
 
@@ -17,7 +19,7 @@ SRCS = $(SRCDIR)/main.c
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 LIB_SRCS = $(wildcard $(LIBDIR)/*.c)
 LIB_OBJS = $(LIB_SRCS:$(LIBDIR)/%.c=$(OBJDIR)/%.o)
-TEST_OBJS = $(OBJDIR)/test.o $(OBJDIR)/config.o
+TEST_OBJS = $(OBJDIR)/test.o
 
 .PHONY: all clean
 
@@ -30,10 +32,10 @@ $(NAME): $(OBJS) $(LIB_OBJS)
 $(OBJDIR):
 	mkdir -p $@
 
-$(OBJS): $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+$(OBJS): $(OBJDIR)/%.o: $(SRCDIR)/%.c $(CONFIG) | $(OBJDIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(LIB_OBJS): $(OBJDIR)/%.o: $(LIBDIR)/%.c $(INCLUDEDIR)/%.h | $(OBJDIR)
+$(LIB_OBJS): $(OBJDIR)/%.o: $(LIBDIR)/%.c $(INCLUDEDIR)/%.h $(CONFIG) | $(OBJDIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
