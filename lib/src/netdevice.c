@@ -6,8 +6,6 @@
 
 #include "util.h"
 
-const byte *MY_MAC_ADDR = NULL;
-
 /**
  * Capture handle of netdevice, resolve the Ethernet header
  * and passing payload to upper matching protocol.
@@ -144,12 +142,13 @@ err_out:
  * @param errbuf errbuf will be fill if there's error
  * @return Netdevice, NETDEVICE_ERROR_NULL if error
  */
-netdevice_t *netdevice_open(const char *device_name, char *errbuf) {
+netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 	// Allocate space for device
 	netdevice_t *device = (netdevice_t *)calloc(1, sizeof(netdevice_t));
 
 	// Init protocol list by point it into NULL
 	device->proto_list = NULL;
+	device->device_name = device_name;
 
 	/**
 	 * Open a pcap capture handle by pcap_open_live(),
@@ -311,8 +310,6 @@ void netdevice_close(netdevice_t *device) {
 		free(tmp_protocol);
 	}
 
-	// free MY_MAC_ADDR
-	free(MY_MAC_ADDR);
 	// close capture handle in device
 	pcap_close(device->capture_handle);
 	// free device itself
@@ -321,24 +318,47 @@ void netdevice_close(netdevice_t *device) {
 	return;
 }
 
-void netdevice_init_my_mac(const char *dev_name) {
+/**
+ * Get the MAC address by looking up
+ * '/sys/class/net/(dev)/address'
+ * @param device Specify the interface
+ * @return Host MAC address on success,
+ * NETDEVICE_ERROR_NULL on error
+ */
+byte *netdevice_get_my_mac(const netdevice_t *device) {
 
 	char addr_file_name[256] = "/sys/class/net/";	// MAC address's file name on system
 
 	// Append device name to file name
-	strcat(addr_file_name, dev_name);
+	strcat(addr_file_name, device->device_name);
 	strcat(addr_file_name, "/address");
 
 	char MAC_addr_str[18];	 // Buffer for the file reading
 
 	// Open the file with read mode
 	FILE *addr_file = fopen(addr_file_name, "r");
-	// Read the file
-	fscanf(addr_file, "%s", MAC_addr_str);
-	printf("%s", MAC_addr_str);
-	MY_MAC_ADDR = string_to_eth_addr(MAC_addr_str);
 
-	return;
+	// Return NETDEVICE_ERROR_NULL is fopen() failed
+	if (addr_file == NULL) {
+		fprintf(stderr, "%s:%d in %s(): fopen(): error on open file\n", __FILE__, __LINE__,
+				__func__);
+		goto err_out;
+	}
+
+	// Read the file
+	if (fscanf(addr_file, "%s", MAC_addr_str) < 0) {
+		fprintf(stderr, "%s:%d in %s(): fscanf(): error on read file\n", __FILE__, __LINE__,
+				__func__);
+		goto err_out;
+	}
+	fclose(addr_file);
+
+	// Transfer string into byte array
+	return string_to_eth_addr(MAC_addr_str);
+
+err_out:
+	fclose(addr_file);
+	return NETDEVICE_ERROR_NULL;
 }
 
 /**

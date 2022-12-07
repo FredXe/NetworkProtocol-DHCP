@@ -28,6 +28,7 @@ typedef struct pcap_pkthdr pcap_pkthdr_t;
 struct netdevice {
 	pcap_t *capture_handle;	  // Pcap capture handle
 	protocol_t *proto_list;	  // Head of protocol list
+	char *device_name;		  // Device name of linked interface
 };							  // Resources of netdevice
 
 struct protocol {
@@ -50,14 +51,14 @@ typedef struct {
  * Public Methods
  *================*/
 extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
-extern netdevice_t *netdevice_open(const char *device_name, char *errbuf);
+extern netdevice_t *netdevice_open(char *device_name, char *errbuf);
 extern int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
 								  netdevice_handler callback);
 extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
 						  const u_int payload_len);
 extern int netdevice_rx(netdevice_t *netdevice);
 extern void netdevice_close(netdevice_t *device);
-extern void netdevice_init_my_mac(const char *dev_name);
+extern byte *netdevice_get_my_mac(const netdevice_t *device);
 extern byte *string_to_eth_addr(const char *eth_addr_str);
 
 #endif
