@@ -22,10 +22,11 @@ void callback_test(netdevice_t *netdevice, const byte *packet, unsigned int leng
 }
 
 int main() {
-	byte *eth = string_to_eth_addr("20:7b:d2:19:e8:00");
+	byte *eth = string_to_eth_addr("20:7b:d2:19:e8:ff");
 	// byte *dst_eth = string_to_eth_addr("70:82:69:68:68:89");
 	byte dst_eth[ETH_ADDR_LEN] = "FREDDY";
 	byte *ip = string_to_ip_addr("192.168.1.1");
+	printf("%s\n", ip_addr_to_string(ip));
 
 	char dev_name[20];
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -45,15 +46,13 @@ int main() {
 	// netdevice_xmit(device, eth_hdr, pay, 0);
 	// two_bytes eth_type = 0x0608;
 	// netdevice_add_protocol(device, eth_type, callback_test);
-	// netdevice_add_protocol(device, 0x0608, callback_test);
+	netdevice_add_protocol(device, ETH_ARP, callback_test);
 	// netdevice_rx(device);
-	// while (netdevice_rx(device) >= 0)
-	// 	;
+	while (netdevice_rx(device) >= 0)
+		;
 	netdevice_close(device);
 	free(eth_hdr);
 	// free(dst_eth);
-	free(eth);
-	free(ip);
 
 	return 0;
 }
