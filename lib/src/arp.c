@@ -15,7 +15,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_addr) {
 
 	// Build up Ethernet header
 	memcpy(eth_hdr.eth_dst, ETH_BROADCAST_ADDR, ETH_ADDR_LEN);
-	const byte *MY_MAC_ADDR = netdevice_get_my_mac(device);
+	byte *MY_MAC_ADDR = netdevice_get_my_mac(device);
 	memcpy(eth_hdr.eth_src, MY_MAC_ADDR, ETH_ADDR_LEN);
 	eth_hdr.eth_type = ETH_ARP;
 
@@ -28,7 +28,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_addr) {
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REQUEST;
 	memcpy(arp_pkt.src_eth_addr, MY_MAC_ADDR, ETH_ADDR_LEN);
-	const byte *MY_IP_ADDR = ip_get_my_ip(device);
+	byte *MY_IP_ADDR = get_my_ip(device);
 	memcpy(arp_pkt.src_ip_addr, MY_IP_ADDR, IP_ADDR_LEN);
 	memset(arp_pkt.dst_eth_addr, 0, ETH_ADDR_LEN);
 	memcpy(arp_pkt.dst_ip_addr, dst_ip_addr, IP_ADDR_LEN);
@@ -42,14 +42,13 @@ int arp_request(netdevice_t *device, byte *dst_ip_addr) {
 		goto err_out;
 	}
 
-	// Free the resources
-	free(MY_MAC_ADDR);
-	free(MY_IP_ADDR);
+#if (DEBUG_ARP_REQUEST == 1)
+	printf("ARP request to %s\n", ip_addr_to_string(dst_ip_addr));
+#endif
+
 	return 0;
 
 // Label for error exit
 err_out:
-	free(MY_MAC_ADDR);
-	free(MY_IP_ADDR);
 	return ARP_ERROR;
 }
