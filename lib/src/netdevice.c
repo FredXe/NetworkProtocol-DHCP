@@ -156,7 +156,7 @@ netdevice_t *netdevice_open(const char *device_name, char *errbuf) {
 	 */
 	if ((device->capture_handle = pcap_open_live(device_name, MTU, PCAP_OPENFLAG_PROMISCUOUS,
 												 CAP_TIMEOUT, errbuf)) == NULL) {
-		fprintf(stderr, "%s:%d in %s(): pcap_open_live(): open pcap capture handle failed\n",
+		fprintf(stderr, "%s:%d in %s(): pcap_open_live(): failed to open pcap capture handle\n",
 				__FILE__, __LINE__, __func__);
 		goto err_out;
 	}
@@ -165,7 +165,7 @@ netdevice_t *netdevice_open(const char *device_name, char *errbuf) {
 	 * Set the capture device into non-blocking mode
 	 */
 	if (pcap_setnonblock(device->capture_handle, 1, errbuf) == PCAP_ERROR) {
-		fprintf(stderr, "%s:%d in %s(): pcap_setnonblock(): set non-blocking mode failed\n",
+		fprintf(stderr, "%s:%d in %s(): pcap_setnonblock(): failed to set non-blocking mode\n",
 				__FILE__, __LINE__, __func__);
 		goto err_out;
 	}
@@ -285,7 +285,7 @@ int netdevice_rx(netdevice_t *netdevice) {
 	} else if (pkt_cnt == PCAP_ERROR_BREAK) {
 		fprintf(stderr,
 				"%s:%d in %s(): pcap_dispatch(): the loop terminated due to a call to "
-				"pcap_breakloop() before any packets were processed\n",
+				"pcap_breakloop() before any packets were processed\n ",
 				__FILE__, __LINE__, __func__);
 		return NETDEVICE_ERROR;
 	}
