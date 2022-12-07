@@ -21,7 +21,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_addr) {
 
 	arp_t arp_pkt;	 // ARP request packet
 
-	// Build up ARP request packer
+	// Build up ARP request packet
 	arp_pkt.hdr_type = ARP_ETH_TYPE;
 	arp_pkt.proto_type = ETH_IPV4;
 	arp_pkt.hdr_addr_len = ETH_ADDR_LEN;
