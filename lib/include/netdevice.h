@@ -6,12 +6,13 @@
 
 #include "types.h"
 
+#define ETH_ADDR_LEN 6		// Length of Ethernet address
+#define MTU			 1500	// Ethernet Maximum Transmission Unit
+#define MIN_ETH_LEN	 60		// Minimal length of Ethernet frame
+#define CAP_TIMEOUT	 100	// Caption timeout (ms)
+
 #define NETDEVICE_ERROR		 -1		// Netdevice common error
 #define NETDEVICE_ERROR_NULL NULL	// Netdevice common error with NULL pointer
-#define ETH_ADDR_LEN		 6		// Length of Ethernet address
-#define MTU					 1500	// Ethernet Maximum Transmission Unit
-#define MIN_ETH_LEN			 60		// Minimal length of Ethernet frame
-#define CAP_TIMEOUT			 100	// Caption timeout (ms)
 
 /**
  * Script for allocate an eth address
