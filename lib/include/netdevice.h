@@ -9,9 +9,10 @@
 #define NETDEVICE_ERROR		 -1
 #define NETDEVICE_ERROR_NULL NULL
 #define ETH_ADDR_LEN		 6
-#define MTU					 1500
-#define MIN_ETH_LEN			 60
-#define CAP_TIMEOUT			 100
+#define ETH_ADDR
+#define MTU			1500
+#define MIN_ETH_LEN 60
+#define CAP_TIMEOUT 100
 
 /**
  * Script for allocate an eth address
@@ -46,6 +47,9 @@ typedef struct {
 	byte eth_src[ETH_ADDR_LEN];	  // Source MAC address
 	two_bytes eth_type;			  // Ethertype
 } eth_hdr_t;					  // Ethernet header
+
+extern const byte ETH_BROADCAST_ADDR[ETH_ADDR_LEN];
+extern const byte ETH_NULL_ADDR[ETH_ADDR_LEN];
 
 /*================
  * Public Methods

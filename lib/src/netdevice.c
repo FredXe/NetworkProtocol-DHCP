@@ -6,6 +6,9 @@
 
 #include "util.h"
 
+const byte ETH_BROADCAST_ADDR[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+const byte ETH_NULL_ADDR[] = {0, 0, 0, 0, 0, 0};
+
 /**
  * Capture handle of netdevice, resolve the Ethernet header
  * and passing payload to upper matching protocol.
