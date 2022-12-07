@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "arp.h"
 #include "ip.h"
 #include "netdevice.h"
 #include "util.h"
@@ -36,10 +37,13 @@ int main() {
 	memcpy(eth_hdr->eth_dst, dst_eth, ETH_ADDR_LEN);
 	memcpy(eth_hdr->eth_src, eth, ETH_ADDR_LEN);
 	eth_hdr->eth_type = 0x0608;
-	byte pay[10];
+	// byte test[IP_ADDR_LEN];
+	// memcpy(test, ip, IP_ADDR_LEN);
+
+	arp_request(device, ip);
+	// byte pay[10];
 	// netdevice_xmit(device, eth_hdr, pay, 0);
-	two_bytes eth_type = 0x0608;
-	netdevice_init_my_mac(dev_name);
+	// two_bytes eth_type = 0x0608;
 	// netdevice_add_protocol(device, eth_type, callback_test);
 	// netdevice_add_protocol(device, 0x0608, callback_test);
 	// netdevice_rx(device);
