@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
+byte *ip_get_my_ip(netdevice_t *device) {
+	return string_to_ip_addr("192.168.1.116");
+}
+
 /**
  * Convert string into byte array
  * @param ip_addr_str *.*.*.* format string
