@@ -63,6 +63,5 @@ extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, c
 extern int netdevice_rx(netdevice_t *netdevice);
 extern void netdevice_close(netdevice_t *device);
 extern byte *netdevice_get_my_mac(const netdevice_t *device);
-extern byte *string_to_eth_addr(const char *eth_addr_str);
 
 #endif

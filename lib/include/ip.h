@@ -19,7 +19,5 @@
 /*================
  * Public Methods
  *================*/
-extern byte *ip_get_my_ip(netdevice_t *device);
-extern byte *string_to_ip_addr(const char *ip_addr_str);
 
 #endif
