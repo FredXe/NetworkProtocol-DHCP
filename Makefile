@@ -37,6 +37,7 @@ $(LIB_OBJS): $(OBJDIR)/%.o: $(LIBDIR)/%.c $(INCLUDEDIR)/%.h | $(OBJDIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
+	- $(RM) -f test
 	- $(RM) -f $(NAME)
 	- $(RM) -rf $(OBJDIR)
 
