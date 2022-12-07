@@ -6,10 +6,10 @@
 #include "netdevice.h"
 #include "types.h"
 
-#define IP_ADDR_LEN 4
+#define IP_ADDR_LEN 4	// Length of IPv4 address
 
-#define IP_ERROR	  -1
-#define IP_ERROR_NULL NULL
+#define IP_ERROR	  -1	 // IP common error
+#define IP_ERROR_NULL NULL	 // IP common error with NULL pointer
 
 /**
  * Script for allocate an IP address
