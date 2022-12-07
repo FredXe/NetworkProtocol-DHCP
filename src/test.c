@@ -28,7 +28,7 @@ int main() {
 
 	char dev_name[20];
 	char errbuf[PCAP_ERRBUF_SIZE];
-	netdevice_getdevice(1, dev_name);
+	netdevice_getdevice(0, dev_name);
 	printf("%s\n", dev_name);
 	netdevice_t *device;
 	device = netdevice_open(dev_name, errbuf);
@@ -39,11 +39,12 @@ int main() {
 	byte pay[10];
 	// netdevice_xmit(device, eth_hdr, pay, 0);
 	two_bytes eth_type = 0x0608;
+	netdevice_init_my_mac(dev_name);
 	// netdevice_add_protocol(device, eth_type, callback_test);
-	netdevice_add_protocol(device, 0x0608, callback_test);
+	// netdevice_add_protocol(device, 0x0608, callback_test);
 	// netdevice_rx(device);
-	while (netdevice_rx(device) >= 0)
-		;
+	// while (netdevice_rx(device) >= 0)
+	// 	;
 	netdevice_close(device);
 	free(eth_hdr);
 	// free(dst_eth);

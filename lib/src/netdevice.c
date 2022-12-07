@@ -6,6 +6,8 @@
 
 #include "util.h"
 
+const byte *MY_MAC_ADDR = NULL;
+
 /**
  * Capture handle of netdevice, resolve the Ethernet header
  * and passing payload to upper matching protocol.
@@ -309,10 +311,32 @@ void netdevice_close(netdevice_t *device) {
 		free(tmp_protocol);
 	}
 
+	// free MY_MAC_ADDR
+	free(MY_MAC_ADDR);
 	// close capture handle in device
 	pcap_close(device->capture_handle);
 	// free device itself
 	free(device);
+
+	return;
+}
+
+void netdevice_init_my_mac(const char *dev_name) {
+
+	char addr_file_name[256] = "/sys/class/net/";	// MAC address's file name on system
+
+	// Append device name to file name
+	strcat(addr_file_name, dev_name);
+	strcat(addr_file_name, "/address");
+
+	char MAC_addr_str[18];	 // Buffer for the file reading
+
+	// Open the file with read mode
+	FILE *addr_file = fopen(addr_file_name, "r");
+	// Read the file
+	fscanf(addr_file, "%s", MAC_addr_str);
+	printf("%s", MAC_addr_str);
+	MY_MAC_ADDR = string_to_eth_addr(MAC_addr_str);
 
 	return;
 }
