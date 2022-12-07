@@ -17,7 +17,7 @@ SRCS = $(SRCDIR)/main.c
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 LIB_SRCS = $(wildcard $(LIBDIR)/*.c)
 LIB_OBJS = $(LIB_SRCS:$(LIBDIR)/%.c=$(OBJDIR)/%.o)
-TEST_OBJS = $(OBJDIR)/test.o
+TEST_OBJS = $(OBJDIR)/test.o $(OBJDIR)/config.o
 
 .PHONY: all clean
 
