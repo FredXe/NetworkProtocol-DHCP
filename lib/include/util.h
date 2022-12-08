@@ -10,7 +10,10 @@
 #define ETH_ARP	 0x0608
 
 #define ETH_BUF_LEN 18
+#define MAC_BUF_LEN 18
 #define IP_BUF_LEN	16
+
+#define GET_IP(ip_addr) (*((ip_addr_t *)(ip_addr)))
 
 #define MAX(A, B) ((A > B) ? A : B)
 #define MIN(A, B) ((A < B) ? A : B)
