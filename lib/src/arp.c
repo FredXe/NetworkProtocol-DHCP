@@ -4,7 +4,7 @@
 
 #include "util.h"
 
-static const char *arp_op_string(two_bytes op);
+static const char *arp_op_to_string(two_bytes op);
 static void arp_dump(arp_t *arp);
 
 /**
@@ -44,7 +44,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_a) {
 	}
 
 #if (DEBUG_ARP_REQUEST == 1)
-	printf("ARP request to %s\n", ip_addr_to_string(dst_ip_a));
+	printf("ARP request to %s\n", ip_addr_to_string(dst_ip_a, NULL));
 #endif
 
 	return 0;
@@ -92,7 +92,7 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 	}
 
 #if (DEBUG_ARP_REPLY == 1)
-	printf("ARP reply to %s\n", ip_addr_to_string(dst_ip_addr));
+	printf("ARP reply to %s\n", ip_addr_to_string(dst_ip_addr, NULL));
 #endif
 
 	return 0;
@@ -111,6 +111,10 @@ err_out:
  */
 void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 	arp_t *arp_pkt = (arp_t *)packet;
+
+#if (DEBUG_ARP == 1)
+	arp_dump(arp_pkt);
+#endif
 
 	switch (arp_pkt->op) {
 	case ARP_OP_REQUEST:
@@ -142,11 +146,15 @@ static const char *arp_op_to_string(two_bytes op) {
 }
 
 static void arp_dump(arp_t *arp) {
+	char src_eth_str[ETH_BUF_LEN], src_ip_str[IP_BUF_LEN];
+	char dst_eth_str[ETH_BUF_LEN], dst_ip_str[IP_BUF_LEN];
 	printf("ARP Eth=%04x/%d, IP=%04x/%d, Op=%04x(%s)\n"
 		   "\tFrom %s (%s)\n"
 		   "\tTo   %s (%s)\n",
 		   swap16(arp->hdr_type), arp->hdr_addr_len, swap16(arp->proto_type), arp->ip_addr_len,
-		   swap16(arp->op), arp_op_to_string(arp->op), eth_addr_to_string(arp->src_eth_addr),
-		   ip_addr_to_string(arp->src_ip_addr), eth_addr_to_string(arp->dst_eth_addr),
-		   ip_addr_to_string(arp->dst_ip_addr));
+		   swap16(arp->op), arp_op_to_string(arp->op),
+		   eth_addr_to_string(arp->src_eth_addr, src_eth_str),
+		   ip_addr_to_string(arp->src_ip_addr, src_ip_str),
+		   eth_addr_to_string(arp->dst_eth_addr, dst_eth_str),
+		   ip_addr_to_string(arp->dst_ip_addr, dst_ip_str));
 }
