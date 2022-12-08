@@ -122,3 +122,21 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 		break;
 	}
 }
+
+/**
+ * Convert ARP operation code into string
+ * @param op ARP operation code
+ * @return const char*, "Unknown" for excepted type
+ */
+static const char *arp_op_to_string(two_bytes op) {
+	switch (op) {
+	case ARP_OP_REQUEST:
+		return "Request";
+	case ARP_OP_REPLY:
+		return "Reply";
+	default:
+		return "Unknown";
+		break;
+	}
+	return NULL;
+}
