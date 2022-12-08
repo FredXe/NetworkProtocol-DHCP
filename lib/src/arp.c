@@ -103,6 +103,13 @@ err_out:
 	return ARP_ERROR;
 }
 
+/**
+ * Capture handle function of ARP that lower layer
+ * to callback
+ * @param device Interface that send out
+ * @param packet ARP protocol packet
+ * @param length Length of packet
+ */
 void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 	arp_t *arp_pkt = (arp_t *)packet;
 
