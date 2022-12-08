@@ -5,5 +5,6 @@
 
 typedef u_int8_t byte;
 typedef u_int16_t two_bytes;
+typedef u_int32_t ip_addr_t;
 
 #endif
