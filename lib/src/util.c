@@ -34,13 +34,15 @@ const byte *string_to_ip_addr(const char *ip_addr_str) {
 /**
  * Convert byte array IP address into string
  * @param ip_addr IP address in bits form
+ * @param buf String buffer to be use
  * @return ip_addr in *.*.*.* format string
  */
-const char *ip_addr_to_string(byte *ip_addr) {
+const char *ip_addr_to_string(byte *ip_addr, char *buf) {
 	static char ip_buf[16];
-	sprintf(ip_buf, "%d.%d.%d.%d", (int)ip_addr[0], (int)ip_addr[1], (int)ip_addr[2],
-			(int)ip_addr[3]);
-	return ip_buf;
+	if (buf == NULL)
+		buf = ip_buf;
+	sprintf(buf, "%d.%d.%d.%d", (int)ip_addr[0], (int)ip_addr[1], (int)ip_addr[2], (int)ip_addr[3]);
+	return buf;
 }
 
 /**
@@ -71,13 +73,16 @@ const byte *string_to_eth_addr(const char *eth_addr_str) {
 /**
  * Convert byte array MAC address into string
  * @param eth_addr MAC address in bits form
+ * @param buf String buffer to be use
  * @return eth_addr in **:**:**:**:**:** format string
  */
-const char *eth_addr_to_string(byte *eth_addr) {
+const char *eth_addr_to_string(byte *eth_addr, char *buf) {
 	static char eth_buf[18];
-	sprintf(eth_buf, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", eth_addr[0], eth_addr[1], eth_addr[2],
+	if (buf == NULL)
+		buf = eth_buf;
+	sprintf(buf, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", eth_addr[0], eth_addr[1], eth_addr[2],
 			eth_addr[3], eth_addr[4], eth_addr[5]);
-	return eth_buf;
+	return buf;
 }
 
 two_bytes swap16(two_bytes in) {
