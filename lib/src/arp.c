@@ -145,6 +145,10 @@ static const char *arp_op_to_string(two_bytes op) {
 	return NULL;
 }
 
+/**
+ * Print ARP packet in format
+ * @param arp ARP packet
+ */
 static void arp_dump(arp_t *arp) {
 	char src_eth_str[ETH_BUF_LEN], src_ip_str[IP_BUF_LEN];
 	char dst_eth_str[ETH_BUF_LEN], dst_ip_str[IP_BUF_LEN];
