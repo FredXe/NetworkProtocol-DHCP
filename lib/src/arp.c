@@ -4,6 +4,18 @@
 
 #include "util.h"
 
+#define MAX_ARPIP_N 8	// The max number of ARP table's elements
+
+typedef struct {
+	byte ip_addr[IP_ADDR_LEN];	   // IP address
+	byte mac_addr[ETH_ADDR_LEN];   // MAC address
+} ip_mac_addr;					   // IP - MAC reference
+
+// ARP table
+static ip_mac_addr arp_table[MAX_ARPIP_N];
+// The number of the ARP table's element
+static int arp_table_n = 0;
+static const byte *arp_look_up(const byte *ip_addr);
 static const char *arp_op_to_string(two_bytes op);
 static void arp_dump(arp_t *arp);
 
@@ -128,6 +140,22 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 }
 
 /**
+ * Look up the ARP table to check if it's inside
+ * @param ip_addr IP address use to check
+ * @return MAC address of ip_addr,
+ * NULL if not found
+ */
+const byte *arp_look_up(const byte *ip_addr) {
+	// Go through ARP table
+	for (int i = 0; i <= arp_table_n; i++) {
+		// Return if ARP table has it inside
+		if (memcmp(ip_addr, arp_table[i].ip_addr, IP_ADDR_LEN) == 0)
+			return arp_table[i].mac_addr;
+	}
+	return NULL;
+}
+
+/**
  * Convert ARP operation code into string
  * @param op ARP operation code
  * @return const char*, "Unknown" for excepted type
@@ -161,4 +189,5 @@ static void arp_dump(arp_t *arp) {
 		   ip_addr_to_string(arp->src_ip_addr, src_ip_str),
 		   eth_addr_to_string(arp->dst_eth_addr, dst_eth_str),
 		   ip_addr_to_string(arp->dst_ip_addr, dst_ip_str));
+	return;
 }

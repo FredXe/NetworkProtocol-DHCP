@@ -5,7 +5,8 @@
 #include "netdevice.h"
 #include "types.h"
 
-#define ARP_ERROR -1   // ARP common error
+#define ARP_ERROR	   -1	  // ARP common error
+#define ARP_ERROR_NULL NULL	  // ARP common error with NULL
 
 #define ARP_ETH_TYPE   0x0100	// Hardware type of Ethernet in ARP
 #define ARP_OP_REQUEST 0x0100	// ARP op code on request
