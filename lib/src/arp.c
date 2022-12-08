@@ -140,3 +140,13 @@ static const char *arp_op_to_string(two_bytes op) {
 	}
 	return NULL;
 }
+
+static void arp_dump(arp_t *arp) {
+	printf("ARP Eth=%04x/%d, IP=%04x/%d, Op=%04x(%s)\n"
+		   "\tFrom %s (%s)\n"
+		   "\tTo   %s (%s)\n",
+		   swap16(arp->hdr_type), arp->hdr_addr_len, swap16(arp->proto_type), arp->ip_addr_len,
+		   swap16(arp->op), arp_op_to_string(arp->op), eth_addr_to_string(arp->src_eth_addr),
+		   ip_addr_to_string(arp->src_ip_addr), eth_addr_to_string(arp->dst_eth_addr),
+		   ip_addr_to_string(arp->dst_ip_addr));
+}

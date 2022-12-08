@@ -20,5 +20,6 @@ extern const byte *string_to_ip_addr(const char *ip_addr_str);
 extern const char *ip_addr_to_string(byte *ip_addr);
 extern const byte *string_to_eth_addr(const char *eth_addr_str);
 extern const char *eth_addr_to_string(byte *eth_addr);
+extern two_bytes swap16(two_bytes in);
 
 #endif

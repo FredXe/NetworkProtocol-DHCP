@@ -79,3 +79,7 @@ const char *eth_addr_to_string(byte *eth_addr) {
 			eth_addr[3], eth_addr[4], eth_addr[5]);
 	return eth_buf;
 }
+
+two_bytes swap16(two_bytes in) {
+	return ((in << 8) | (in >> 8));
+}
