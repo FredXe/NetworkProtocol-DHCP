@@ -31,6 +31,11 @@ byte *string_to_ip_addr(const char *ip_addr_str) {
 	return ip_buf;
 }
 
+/**
+ * Convert byte array IP address into string
+ * @param ip_addr IP address in bits form
+ * @return ip_addr in *.*.*.* format string
+ */
 char *ip_addr_to_string(byte *ip_addr) {
 	static char ip_buf[16];
 	sprintf(ip_buf, "%d.%d.%d.%d", (int)ip_addr[0], (int)ip_addr[1], (int)ip_addr[2],
@@ -63,6 +68,11 @@ byte *string_to_eth_addr(const char *eth_addr_str) {
 	return eth_buf;
 }
 
+/**
+ * Convert byte array MAC address into string
+ * @param eth_addr MAC address in bits form
+ * @return eth_addr in **:**:**:**:**:** format string
+ */
 char *eth_addr_to_string(byte *eth_addr) {
 	static char eth_buf[18];
 	sprintf(eth_buf, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", eth_addr[0], eth_addr[1], eth_addr[2],
