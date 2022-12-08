@@ -11,6 +11,7 @@
 #include "arp.h"
 #include "ip.h"
 #include "netdevice.h"
+#include "types.h"
 #include "util.h"
 
 int i = 0;
@@ -22,11 +23,9 @@ void callback_test(netdevice_t *netdevice, const byte *packet, unsigned int leng
 }
 
 int main() {
-	byte *eth = string_to_eth_addr("20:7b:d2:19:e8:ff");
+	// byte *eth = string_to_eth_addr("20:7b:d2:19:e8:ff");
 	// byte *dst_eth = string_to_eth_addr("70:82:69:68:68:89");
-	byte dst_eth[ETH_ADDR_LEN] = "FREDDY";
-	byte *ip = string_to_ip_addr("192.168.1.1");
-	printf("%s\n", ip_addr_to_string(ip));
+	// byte dst_eth[ETH_ADDR_LEN] = "FREDDY";
 
 	char dev_name[20];
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -35,19 +34,25 @@ int main() {
 	netdevice_t *device;
 	device = netdevice_open(dev_name, errbuf);
 	eth_hdr_t *eth_hdr = (eth_hdr_t *)calloc(1, sizeof(eth_hdr_t));
-	memcpy(eth_hdr->eth_dst, dst_eth, ETH_ADDR_LEN);
-	memcpy(eth_hdr->eth_src, eth, ETH_ADDR_LEN);
-	eth_hdr->eth_type = 0x0608;
+	// memcpy(eth_hdr->eth_dst, dst_eth, ETH_ADDR_LEN);
+	// memcpy(eth_hdr->eth_src, eth, ETH_ADDR_LEN);
+	// eth_hdr->eth_type = 0x0608;
 	// byte test[IP_ADDR_LEN];
 	// memcpy(test, ip, IP_ADDR_LEN);
 
-	arp_request(device, ip);
 	// byte pay[10];
 	// netdevice_xmit(device, eth_hdr, pay, 0);
 	// two_bytes eth_type = 0x0608;
 	// netdevice_add_protocol(device, eth_type, callback_test);
-	netdevice_add_protocol(device, ETH_ARP, callback_test);
+	netdevice_add_protocol(device, ETH_ARP, arp_main);
 	// netdevice_rx(device);
+	byte ip[IP_ADDR_LEN];
+	memcpy(ip, string_to_ip_addr("192.168.1.1"), IP_ADDR_LEN);
+	printf("%s\n", ip_addr_to_string(ip));
+	arp_request(device, ip);
+	arp_request(device, ip);
+	arp_request(device, ip);
+	arp_request(device, ip);
 	while (netdevice_rx(device) >= 0)
 		;
 	netdevice_close(device);

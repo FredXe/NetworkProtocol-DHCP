@@ -31,6 +31,7 @@ typedef struct {
  *================*/
 extern int arp_request(netdevice_t *device, byte *dst_ip_addr);
 extern int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr);
-extern int apr_send(const netdevice_t *netdevice, const byte *);
+extern void arp_main(netdevice_t *device, const byte *packet, u_int length);
+extern int apr_send(const netdevice_t *device, const byte *);
 
 #endif

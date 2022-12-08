@@ -10,7 +10,7 @@
  * @param dst_ip_addr Destination IP address we're requesting
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_request(netdevice_t *device, byte *dst_ip_addr) {
+int arp_request(netdevice_t *device, byte *dst_ip_a) {
 	eth_hdr_t eth_hdr;	 // Ethernet header for ARP request
 
 	// Build up Ethernet header
@@ -31,7 +31,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_addr) {
 	byte *MY_IP_ADDR = get_my_ip(device);
 	memcpy(arp_pkt.src_ip_addr, MY_IP_ADDR, IP_ADDR_LEN);
 	memset(arp_pkt.dst_eth_addr, 0, ETH_ADDR_LEN);
-	memcpy(arp_pkt.dst_ip_addr, dst_ip_addr, IP_ADDR_LEN);
+	memcpy(arp_pkt.dst_ip_addr, dst_ip_a, IP_ADDR_LEN);
 
 	/**
 	 * Send the packet, free resources and
@@ -43,7 +43,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_addr) {
 	}
 
 #if (DEBUG_ARP_REQUEST == 1)
-	printf("ARP request to %s\n", ip_addr_to_string(dst_ip_addr));
+	printf("ARP request to %s\n", ip_addr_to_string(dst_ip_a));
 #endif
 
 	return 0;
@@ -76,7 +76,7 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 	arp_pkt.proto_type = ETH_IPV4;
 	arp_pkt.hdr_addr_len = ETH_ADDR_LEN;
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
-	arp_pkt.op = ARP_OP_REQUEST;
+	arp_pkt.op = ARP_OP_REPLY;
 	memcpy(arp_pkt.src_eth_addr, MY_MAC_ADDR, ETH_ADDR_LEN);
 	byte *MY_IP_ADDR = get_my_ip(device);
 	memcpy(arp_pkt.src_ip_addr, MY_IP_ADDR, IP_ADDR_LEN);
@@ -101,4 +101,18 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 // Label for error exit
 err_out:
 	return ARP_ERROR;
+}
+
+void arp_main(netdevice_t *device, const byte *packet, u_int length) {
+	arp_t *arp_pkt = (arp_t *)packet;
+
+	switch (arp_pkt->op) {
+	case ARP_OP_REQUEST:
+		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(device), IP_ADDR_LEN) == 0)
+			arp_reply(device, arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
+		break;
+
+	default:
+		break;
+	}
 }
