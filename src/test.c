@@ -48,7 +48,7 @@ int main() {
 	// netdevice_rx(device);
 	byte ip[IP_ADDR_LEN];
 	memcpy(ip, string_to_ip_addr("192.168.1.1"), IP_ADDR_LEN);
-	printf("%s\n", ip_addr_to_string(ip));
+	printf("%s\n", ip_addr_to_string(ip, NULL));
 	arp_request(device, ip);
 	arp_request(device, ip);
 	arp_request(device, ip);
