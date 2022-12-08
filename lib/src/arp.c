@@ -18,6 +18,7 @@ static int arp_table_n = 0;
 
 static const byte *arp_look_up(const byte *ip_addr);
 static void arp_table_add(byte *ip_addr, byte *mac_addr);
+
 static const char *arp_op_to_string(two_bytes op);
 static void arp_dump(arp_t *arp);
 
@@ -144,6 +145,42 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 	default:
 		break;
 	}
+}
+
+/**
+ * Interface for upper layer to send packet
+ * to specific IP address
+ * @param device Interface to send
+ * @param dst_ip_addr Destination IP address
+ * @param eth_type Ethertype
+ * @param payload Payload
+ * @param payload_len Length of payload
+ * @return 0 on success,
+ * ARP_ERROR on xmit error,
+ * ARP_UNKNOWN_MAC on unknow destination
+ * MAC address
+ */
+int arp_send(const netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
+			 u_int payload_len) {
+	eth_hdr_t eth_hdr;	 // Ethernet header
+
+	if (arp_look_up(dst_ip_addr) != NULL) {
+
+		// Build up the Ethernet header
+		memcpy(eth_hdr.eth_dst, arp_look_up(dst_ip_addr), ETH_ADDR_LEN);
+		memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+		eth_hdr.eth_type = eth_type;
+
+		// Send the packet, return ARP_ERROR if netdevice_xmit() on error
+		if (netdevice_xmit(device, &eth_hdr, payload, payload_len) == NETDEVICE_ERROR) {
+			fprintf(stderr, "%s:%d in %s(): netdevice_xmit(): error\n", __FILE__, __LINE__,
+					__func__);
+			return ARP_ERROR;
+		}
+	} else {
+		return ARP_UNKNOWN_MAC;
+	}
+	return 0;
 }
 
 /**

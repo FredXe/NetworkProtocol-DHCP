@@ -5,8 +5,9 @@
 #include "netdevice.h"
 #include "types.h"
 
-#define ARP_ERROR	   -1	  // ARP common error
-#define ARP_ERROR_NULL NULL	  // ARP common error with NULL
+#define ARP_ERROR		-1	   // ARP common error
+#define ARP_UNKNOWN_MAC -2	   // ARP send() for unknown MAC address
+#define ARP_ERROR_NULL	NULL   // ARP common error with NULL
 
 #define ARP_ETH_TYPE   0x0100	// Hardware type of Ethernet in ARP
 #define ARP_OP_REQUEST 0x0100	// ARP op code on request
@@ -33,6 +34,7 @@ typedef struct {
 extern int arp_request(netdevice_t *device, byte *dst_ip_addr);
 extern int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr);
 extern void arp_main(netdevice_t *device, const byte *packet, u_int length);
-extern int apr_send(const netdevice_t *device, const byte *);
+extern int arp_send(const netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
+					u_int payload_len);
 
 #endif
