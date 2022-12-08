@@ -5,7 +5,7 @@
 
 #include "ip.h"
 
-byte *get_my_ip(netdevice_t *device) {
+const byte *get_my_ip(netdevice_t *device) {
 	return string_to_ip_addr("192.168.1.116");
 }
 
@@ -15,7 +15,7 @@ byte *get_my_ip(netdevice_t *device) {
  * @return byte* point to ip_addr,
  * NULL on error
  */
-byte *string_to_ip_addr(const char *ip_addr_str) {
+const byte *string_to_ip_addr(const char *ip_addr_str) {
 	if (strlen(ip_addr_str) > 15) {
 		fprintf(stderr, "%s:%d in %s(): length of ip_addr_str exceed\n", __FILE__, __LINE__,
 				__func__);
@@ -36,7 +36,7 @@ byte *string_to_ip_addr(const char *ip_addr_str) {
  * @param ip_addr IP address in bits form
  * @return ip_addr in *.*.*.* format string
  */
-char *ip_addr_to_string(byte *ip_addr) {
+const char *ip_addr_to_string(byte *ip_addr) {
 	static char ip_buf[16];
 	sprintf(ip_buf, "%d.%d.%d.%d", (int)ip_addr[0], (int)ip_addr[1], (int)ip_addr[2],
 			(int)ip_addr[3]);
@@ -49,7 +49,7 @@ char *ip_addr_to_string(byte *ip_addr) {
  * @return byte* point to eth_addr,
  * NULL on error
  */
-byte *string_to_eth_addr(const char *eth_addr_str) {
+const byte *string_to_eth_addr(const char *eth_addr_str) {
 	if (strlen(eth_addr_str) != 17) {
 		fprintf(stderr, "%s:%d in %s(): length of eth_addr_str invalid\n", __FILE__, __LINE__,
 				__func__);
@@ -73,7 +73,7 @@ byte *string_to_eth_addr(const char *eth_addr_str) {
  * @param eth_addr MAC address in bits form
  * @return eth_addr in **:**:**:**:**:** format string
  */
-char *eth_addr_to_string(byte *eth_addr) {
+const char *eth_addr_to_string(byte *eth_addr) {
 	static char eth_buf[18];
 	sprintf(eth_buf, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", eth_addr[0], eth_addr[1], eth_addr[2],
 			eth_addr[3], eth_addr[4], eth_addr[5]);

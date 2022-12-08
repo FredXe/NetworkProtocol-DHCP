@@ -62,6 +62,6 @@ extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, c
 						  const u_int payload_len);
 extern int netdevice_rx(netdevice_t *netdevice);
 extern void netdevice_close(netdevice_t *device);
-extern byte *netdevice_get_my_mac(const netdevice_t *device);
+extern const byte *netdevice_get_my_mac(const netdevice_t *device);
 
 #endif

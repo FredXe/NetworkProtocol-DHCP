@@ -328,7 +328,7 @@ void netdevice_close(netdevice_t *device) {
  * @return Host MAC address on success,
  * NETDEVICE_ERROR_NULL on error
  */
-byte *netdevice_get_my_mac(const netdevice_t *device) {
+const byte *netdevice_get_my_mac(const netdevice_t *device) {
 
 	char addr_file_name[256] = "/sys/class/net/";	// MAC address's file name on system
 
