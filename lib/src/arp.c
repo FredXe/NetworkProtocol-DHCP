@@ -15,7 +15,9 @@ typedef struct {
 static ip_mac_addr arp_table[MAX_ARPIP_N];
 // The number of the ARP table's element
 static int arp_table_n = 0;
+
 static const byte *arp_look_up(const byte *ip_addr);
+static void arp_table_add(byte *ip_addr, byte *mac_addr);
 static const char *arp_op_to_string(two_bytes op);
 static void arp_dump(arp_t *arp);
 
@@ -122,7 +124,7 @@ err_out:
  * @param length Length of packet
  */
 void arp_main(netdevice_t *device, const byte *packet, u_int length) {
-	arp_t *arp_pkt = (arp_t *)packet;
+	arp_t *arp_pkt = (arp_t *)packet;	// ARP packet
 
 #if (DEBUG_ARP == 1)
 	arp_dump(arp_pkt);
@@ -133,7 +135,12 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(device), IP_ADDR_LEN) == 0)
 			arp_reply(device, arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
 		break;
-
+	case ARP_OP_REPLY:
+		// Cache this ARP reply if we haven't
+		if (GET_IP(arp_pkt->dst_ip_addr) == GET_IP(get_my_ip(device)) &&
+			arp_look_up(arp_pkt->src_ip_addr) == NULL)
+			arp_table_add(arp_pkt->src_ip_addr, arp_pkt->src_eth_addr);
+		break;
 	default:
 		break;
 	}
@@ -153,6 +160,24 @@ const byte *arp_look_up(const byte *ip_addr) {
 			return arp_table[i].mac_addr;
 	}
 	return NULL;
+}
+
+/**
+ * Add IP - MAC pair to ARP table
+ * @param ip_addr IP address
+ * @param mac_addr MAC address
+ */
+void arp_table_add(byte *ip_addr, byte *mac_addr) {
+	arp_table_n = (arp_table_n + 1) % MAX_ARPIP_N;
+	memcpy(arp_table[arp_table_n].ip_addr, ip_addr, IP_ADDR_LEN);
+	memcpy(arp_table[arp_table_n].mac_addr, mac_addr, ETH_ADDR_LEN);
+
+#if (DEBUG_ARP_CACHE == 1)
+	char ip_buf[IP_BUF_LEN], mac_buf[MAC_BUF_LEN];
+
+	printf("ARP cached #%d: %s - %s", arp_table_n, ip_addr_to_string(ip_addr, ip_buf),
+		   ip_addr_to_string(mac_addr, mac_buf));
+#endif
 }
 
 /**
