@@ -41,6 +41,8 @@
 
 #define ERR_COLOR LIGHT_RED	  // Color for error message
 
+#define MAX_LINE_LEN 16	  // MAX bytes print in one line
+
 #define GET_IP(ip_addr) (*((ip_addr_t *)(ip_addr)))
 
 #define MAX(A, B) ((A > B) ? A : B)
@@ -54,6 +56,7 @@ extern const byte *string_to_ip_addr(const char *ip_addr_str);
 extern const char *ip_addr_to_string(byte *ip_addr, char *buf);
 extern const byte *string_to_eth_addr(const char *eth_addr_str);
 extern const char *eth_addr_to_string(byte *eth_addr, char *buf);
+extern void print_data(byte *data, u_int data_len);
 extern two_bytes swap16(two_bytes in);
 
 #endif

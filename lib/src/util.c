@@ -85,6 +85,38 @@ const char *eth_addr_to_string(byte *eth_addr, char *buf) {
 	return buf;
 }
 
+/**
+ * Print out the data in hex base with specific format
+ * @param data Bytes pointer would be printed
+ * @param data_len Length of data
+ */
+void print_data(byte *data, u_int data_len) {
+	int i;
+
+	for (i = 0; i < data_len; i++) {
+		printf("%.2x ", data[i]);
+		if ((i + 1) % MAX_LINE_LEN == 0) {
+			printf("\n");
+		} else if ((i + 1) % MAX_LINE_LEN == 8) {
+			printf(" ");
+		}
+	}
+
+	/**
+	 * Print new line if the end of output stream
+	 * is not a new line
+	 */
+	if (i % MAX_LINE_LEN != 0) {
+		printf("\n");
+	}
+}
+
+/**
+ * Switch byte arrangement from
+ * Little-endian => Big-endian
+ * @param in Input 2 bytes
+ * @return swaped bytes
+ */
 two_bytes swap16(two_bytes in) {
 	return ((in << 8) | (in >> 8));
 }
