@@ -152,6 +152,12 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 		if (arp_to_send_que.payload_len > 0) {
 			if (GET_IP(arp_pkt->src_ip_addr) == arp_to_send_que.dst_ip_addr) {
 				arp_resend(device);
+			} else {
+#if (DEBUG_ARP == 1)
+				printf("Resend ARP request to %s\n",
+					   ip_addr_to_string((byte *)&arp_to_send_que.dst_ip_addr, NULL));
+#endif
+				arp_request(device, (byte *)&arp_to_send_que.dst_ip_addr);
 			}
 		}
 		break;
