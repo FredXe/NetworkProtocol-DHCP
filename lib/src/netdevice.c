@@ -47,7 +47,7 @@ static void _capture(u_char *device_u_char, const pcap_pkthdr_t *header, const b
 
 /**
  * Get device from pcap_findalldevs(),
- * than select one of it.
+ * then select one of it.
  * @param dev_sel_no '0' - select from terminal.
  * 'non0' - select directly from parameter
  * @param dev_name
@@ -98,8 +98,8 @@ int netdevice_getdevice(const int define_n, char *dev_name) {
 	if (dev_sel == 0) {
 		printf("select the device (1-%d): ", dev_cnt);
 		if (scanf("%d", &dev_sel) != 1) {
-			fprintf(stderr, "%s:%d in %s(): scanf(): reading stdin failed\n", __FILE__, __LINE__,
-					__func__);
+			fprintf(stderr, ERR_COLOR "%s:%d in %s(): scanf(): reading stdin failed\n" NONE,
+					__FILE__, __LINE__, __func__);
 			goto err_out;
 		}
 	}
