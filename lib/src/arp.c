@@ -4,6 +4,13 @@
 
 #include "util.h"
 
+struct {
+	ip_addr_t dst_ip_addr;	 // Destination IP address
+	two_bytes eth_type;		 // Ethertype
+	u_int payload_len;		 // Length of payload
+	byte payload[MTU];		 // Payload
+} arp_to_send_que;			 // Sending queue of arp_send()
+
 #define MAX_ARPIP_N 8	// The max number of ARP table's elements
 
 typedef struct {
@@ -141,6 +148,12 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 		if (GET_IP(arp_pkt->dst_ip_addr) == GET_IP(get_my_ip(device)) &&
 			arp_look_up(arp_pkt->src_ip_addr) == NULL)
 			arp_table_add(arp_pkt->src_ip_addr, arp_pkt->src_eth_addr);
+
+		if (arp_to_send_que.payload_len > 0) {
+			if (GET_IP(arp_pkt->src_ip_addr) == arp_to_send_que.dst_ip_addr) {
+				arp_resend(device);
+			}
+		}
 		break;
 	default:
 		break;
@@ -160,7 +173,7 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
  * ARP_UNKNOWN_MAC on unknow destination
  * MAC address
  */
-int arp_send(const netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
+int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
 			 u_int payload_len) {
 	eth_hdr_t eth_hdr;	 // Ethernet header
 
@@ -178,9 +191,38 @@ int arp_send(const netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, b
 			return ARP_ERROR;
 		}
 	} else {
+		// Store the packet to the to_send_que
+		arp_to_send_que.dst_ip_addr = GET_IP(dst_ip_addr);
+		arp_to_send_que.eth_type = eth_type;
+		arp_to_send_que.payload_len = payload_len;
+		memcpy(arp_to_send_que.payload, payload, payload_len);
+
+		arp_request(device, dst_ip_addr);
 		return ARP_UNKNOWN_MAC;
 	}
+
+#if (DEBUG_ARP == 1)
+	printf("arp_send(): Packet sent to %s (%s) eth_type=%04x len=%d\n",
+		   ip_addr_to_string(dst_ip_addr, NULL), eth_addr_to_string(eth_hdr.eth_dst, NULL),
+		   swap16(eth_type), payload_len);
+#endif
+
 	return 0;
+}
+
+/**
+ * Resend the packet inside arp_to_send_que
+ * @param device Interface to send
+ */
+void arp_resend(netdevice_t *device) {
+	arp_send(device, (byte *)&arp_to_send_que.dst_ip_addr, arp_to_send_que.eth_type,
+			 arp_to_send_que.payload, arp_to_send_que.payload_len);
+
+	// Reset the to send queue
+	memset(arp_to_send_que.payload, 1, arp_to_send_que.payload_len);
+	arp_to_send_que.payload_len = 0;
+	arp_to_send_que.dst_ip_addr = 0;
+	arp_to_send_que.eth_type = 0;
 }
 
 /**
@@ -212,7 +254,7 @@ void arp_table_add(byte *ip_addr, byte *mac_addr) {
 #if (DEBUG_ARP_CACHE == 1)
 	char ip_buf[IP_BUF_LEN], mac_buf[MAC_BUF_LEN];
 
-	printf("ARP cached #%d: %s - %s", arp_table_n, ip_addr_to_string(ip_addr, ip_buf),
+	printf("ARP cached #%d: %s - %s\n", arp_table_n, ip_addr_to_string(ip_addr, ip_buf),
 		   ip_addr_to_string(mac_addr, mac_buf));
 #endif
 }
