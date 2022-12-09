@@ -14,11 +14,11 @@
 #define IP_BUF_LEN	16
 
 #define NONE		 "\033[m"
-#define RED			 "\033[0;32;31m"
+#define RED			 "\033[0;31m"
 #define LIGHT_RED	 "\033[1;31m"
-#define GREEN		 "\033[0;32;32m"
+#define GREEN		 "\033[0;32m"
 #define LIGHT_GREEN	 "\033[1;32m"
-#define BLUE		 "\033[0;32;34m"
+#define BLUE		 "\033[0;34m"
 #define LIGHT_BLUE	 "\033[1;34m"
 #define DARY_GRAY	 "\033[1;30m"
 #define CYAN		 "\033[0;36m"
@@ -55,8 +55,8 @@ extern const byte *get_my_ip(netdevice_t *device);
 extern const byte *string_to_ip_addr(const char *ip_addr_str);
 extern const char *ip_addr_to_string(byte *ip_addr, char *buf);
 extern const byte *string_to_eth_addr(const char *eth_addr_str);
-extern const char *eth_addr_to_string(byte *eth_addr, char *buf);
-extern void print_data(byte *data, u_int data_len);
+extern const char *eth_addr_to_string(const byte *eth_addr, char *buf);
+extern void print_data(const byte *data, const u_int data_len);
 extern two_bytes swap16(two_bytes in);
 
 #endif

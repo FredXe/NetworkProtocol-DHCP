@@ -29,6 +29,20 @@ static void _capture(u_char *device_u_char, const pcap_pkthdr_t *header, const b
 	int frame_len = header->caplen;					   // Length of frame
 	int payload_len = frame_len - sizeof(eth_hdr_t);   // Length of Payload
 
+#if (DEBUG_FRAME_HDR == 1)
+	char src_addr[ETH_BUF_LEN], dst_addr[ETH_BUF_LEN];
+
+	// Print Ethernet header
+	eth_addr_to_string(eth_hdr->eth_src, src_addr);
+	eth_addr_to_string(eth_hdr->eth_dst, dst_addr);
+	printf(ETH_2_DEBUG_COLOR "ETH revceive" ETH_DEBUG_COLOR " %s" NONE "=>" ETH_DEBUG_COLOR
+							 "%s" NONE " (Type=%.04x/Len=%d)\n",
+		   src_addr, dst_addr, swap16(eth_hdr->eth_type), frame_len);
+#endif
+
+#if (DEBUG_FRAME_DUMP == 1)
+	print_data(eth_frame, frame_len);
+#endif
 	/**
 	 * Go through the protocol list to
 	 * find the matching protocol
@@ -252,6 +266,17 @@ int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const by
 		// Now, frame_len is MIN_ETH_LEN = 60
 		frame_len = 60;
 	}
+
+#if (DEBUG_FRAME_HDR == 1)
+	char src_addr[ETH_BUF_LEN], dst_addr[ETH_BUF_LEN];
+
+	// Print Ethernet header
+	eth_addr_to_string(eth_hdr->eth_src, src_addr);
+	eth_addr_to_string(eth_hdr->eth_dst, dst_addr);
+	printf(ETH_2_DEBUG_COLOR "ETH send" ETH_DEBUG_COLOR " %s" NONE "=>" ETH_DEBUG_COLOR "%s" NONE
+							 " (Type=%.04x/Len=%d)\n",
+		   src_addr, dst_addr, swap16(eth_hdr->eth_type), frame_len);
+#endif
 
 	/**
 	 * Send packet with pcap_sendpacket(),

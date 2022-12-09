@@ -76,7 +76,7 @@ const byte *string_to_eth_addr(const char *eth_addr_str) {
  * @param buf String buffer to be use
  * @return eth_addr in **:**:**:**:**:** format string
  */
-const char *eth_addr_to_string(byte *eth_addr, char *buf) {
+const char *eth_addr_to_string(const byte *eth_addr, char *buf) {
 	static char eth_buf[18];
 	if (buf == NULL)
 		buf = eth_buf;
@@ -90,13 +90,15 @@ const char *eth_addr_to_string(byte *eth_addr, char *buf) {
  * @param data Bytes pointer would be printed
  * @param data_len Length of data
  */
-void print_data(byte *data, u_int data_len) {
+void print_data(const byte *data, const u_int data_len) {
 	int i;
-
+	printf("\t");
 	for (i = 0; i < data_len; i++) {
 		printf("%.2x ", data[i]);
 		if ((i + 1) % MAX_LINE_LEN == 0) {
 			printf("\n");
+			if (i + 1 < data_len)
+				printf("\t");
 		} else if ((i + 1) % MAX_LINE_LEN == 8) {
 			printf(" ");
 		}
