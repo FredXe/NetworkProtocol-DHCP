@@ -13,6 +13,34 @@
 #define MAC_BUF_LEN 18
 #define IP_BUF_LEN	16
 
+#define NONE		 "\033[m"
+#define RED			 "\033[0;32;31m"
+#define LIGHT_RED	 "\033[1;31m"
+#define GREEN		 "\033[0;32;32m"
+#define LIGHT_GREEN	 "\033[1;32m"
+#define BLUE		 "\033[0;32;34m"
+#define LIGHT_BLUE	 "\033[1;34m"
+#define DARY_GRAY	 "\033[1;30m"
+#define CYAN		 "\033[0;36m"
+#define LIGHT_CYAN	 "\033[1;36m"
+#define PURPLE		 "\033[0;35m"
+#define LIGHT_PURPLE "\033[1;35m"
+#define BROWN		 "\033[0;33m"
+#define YELLOW		 "\033[1;33m"
+#define LIGHT_GRAY	 "\033[0;37m"
+#define WHITE		 "\033[1;37m"
+
+#define ETH_DEBUG_COLOR	  BLUE		   // Color for netdevice debug message
+#define ETH_2_DEBUG_COLOR LIGHT_BLUE   // Secondary color for netdevice debug message
+
+#define ARP_DEBUG_COLOR	  CYAN		   // Color for ARP debug message
+#define ARP_2_DEBUG_COLOR LIGHT_CYAN   // Secondary color for ARP debug message
+
+#define IP_DEBUG_COLOR	 GREEN		   // Color for IP debug message
+#define IP_2_DEBUG_COLOR LIGHT_GREEN   // Secondary color for IP debug message
+
+#define ERR_COLOR LIGHT_RED	  // Color for error message
+
 #define GET_IP(ip_addr) (*((ip_addr_t *)(ip_addr)))
 
 #define MAX(A, B) ((A > B) ? A : B)

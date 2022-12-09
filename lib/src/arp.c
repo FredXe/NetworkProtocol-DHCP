@@ -61,12 +61,14 @@ int arp_request(netdevice_t *device, byte *dst_ip_a) {
 	 * return ARP_ERROR if netdevice_xmit() error
 	 */
 	if (netdevice_xmit(device, &eth_hdr, (byte *)&arp_pkt, sizeof(arp_t)) == NETDEVICE_ERROR) {
-		fprintf(stderr, "%s:%d in %s(): netdevice_xmit(): error\n", __FILE__, __LINE__, __func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_xmit(): error\n" NONE, __FILE__,
+				__LINE__, __func__);
 		goto err_out;
 	}
 
 #if (DEBUG_ARP_REQUEST == 1)
-	printf("ARP request to %s\n", ip_addr_to_string(dst_ip_a, NULL));
+	printf(ARP_2_DEBUG_COLOR "ARP request" NONE " to " IP_DEBUG_COLOR "%s" NONE "\n",
+		   ip_addr_to_string(dst_ip_a, NULL));
 #endif
 
 	return 0;
@@ -109,12 +111,14 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 	 * return ARP_ERROR if netdevice_xmit() error
 	 */
 	if (netdevice_xmit(device, &eth_hdr, (byte *)&arp_pkt, sizeof(arp_t)) == NETDEVICE_ERROR) {
-		fprintf(stderr, "%s:%d in %s(): netdevice_xmit(): error\n", __FILE__, __LINE__, __func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_xmit(): error\n" NONE, __FILE__,
+				__LINE__, __func__);
 		goto err_out;
 	}
 
 #if (DEBUG_ARP_REPLY == 1)
-	printf("ARP reply to %s\n", ip_addr_to_string(dst_ip_addr, NULL));
+	printf(ARP_2_DEBUG_COLOR "ARP reply" NONE " to " IP_DEBUG_COLOR "%s" NONE "\n",
+		   ip_addr_to_string(dst_ip_addr, NULL));
 #endif
 
 	return 0;
@@ -140,6 +144,7 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 
 	switch (arp_pkt->op) {
 	case ARP_OP_REQUEST:
+		// Reply if the request's destination address is mine
 		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(device), IP_ADDR_LEN) == 0)
 			arp_reply(device, arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
 		break;
@@ -149,12 +154,14 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 			arp_look_up(arp_pkt->src_ip_addr) == NULL)
 			arp_table_add(arp_pkt->src_ip_addr, arp_pkt->src_eth_addr);
 
+		// If there's packet in the Queue
 		if (arp_to_send_que.payload_len > 0) {
+			// Send the packet if we got the ip from the request
 			if (GET_IP(arp_pkt->src_ip_addr) == arp_to_send_que.dst_ip_addr) {
 				arp_resend(device);
 			} else {
 #if (DEBUG_ARP == 1)
-				printf("Resend ARP request to %s\n",
+				printf(ARP_DEBUG_COLOR "Resend ARP request" NONE " to %s\n",
 					   ip_addr_to_string((byte *)&arp_to_send_que.dst_ip_addr, NULL));
 #endif
 				arp_request(device, (byte *)&arp_to_send_que.dst_ip_addr);
@@ -192,8 +199,8 @@ int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *p
 
 		// Send the packet, return ARP_ERROR if netdevice_xmit() on error
 		if (netdevice_xmit(device, &eth_hdr, payload, payload_len) == NETDEVICE_ERROR) {
-			fprintf(stderr, "%s:%d in %s(): netdevice_xmit(): error\n", __FILE__, __LINE__,
-					__func__);
+			fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_xmit(): error\n" NONE, __FILE__,
+					__LINE__, __func__);
 			return ARP_ERROR;
 		}
 	} else {
@@ -208,7 +215,9 @@ int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *p
 	}
 
 #if (DEBUG_ARP == 1)
-	printf("arp_send(): Packet sent to %s (%s) eth_type=%04x len=%d\n",
+	printf(ARP_2_DEBUG_COLOR "arp_send()" NONE ": Packet sent to " IP_DEBUG_COLOR "%s" NONE
+							 " (" ETH_DEBUG_COLOR "%s" NONE ") " ARP_DEBUG_COLOR
+							 "eth_type=%04x len=%d\n" NONE,
 		   ip_addr_to_string(dst_ip_addr, NULL), eth_addr_to_string(eth_hdr.eth_dst, NULL),
 		   swap16(eth_type), payload_len);
 #endif
@@ -260,8 +269,9 @@ void arp_table_add(byte *ip_addr, byte *mac_addr) {
 #if (DEBUG_ARP_CACHE == 1)
 	char ip_buf[IP_BUF_LEN], mac_buf[MAC_BUF_LEN];
 
-	printf("ARP cached #%d: %s - %s\n", arp_table_n, ip_addr_to_string(ip_addr, ip_buf),
-		   ip_addr_to_string(mac_addr, mac_buf));
+	printf(ARP_2_DEBUG_COLOR "ARP cached #%d" NONE ": " IP_DEBUG_COLOR "%s" NONE
+							 " - " IP_DEBUG_COLOR "%s" NONE "\n",
+		   arp_table_n, ip_addr_to_string(ip_addr, ip_buf), ip_addr_to_string(mac_addr, mac_buf));
 #endif
 }
 
@@ -273,11 +283,11 @@ void arp_table_add(byte *ip_addr, byte *mac_addr) {
 static const char *arp_op_to_string(two_bytes op) {
 	switch (op) {
 	case ARP_OP_REQUEST:
-		return "Request";
+		return ARP_2_DEBUG_COLOR "Request" NONE;
 	case ARP_OP_REPLY:
-		return "Reply";
+		return ARP_2_DEBUG_COLOR "Reply" NONE;
 	default:
-		return "Unknown";
+		return ERR_COLOR "Unknown" NONE;
 		break;
 	}
 	return NULL;
@@ -290,9 +300,9 @@ static const char *arp_op_to_string(two_bytes op) {
 static void arp_dump(arp_t *arp) {
 	char src_eth_str[ETH_BUF_LEN], src_ip_str[IP_BUF_LEN];
 	char dst_eth_str[ETH_BUF_LEN], dst_ip_str[IP_BUF_LEN];
-	printf("ARP Eth=%04x/%d, IP=%04x/%d, Op=%04x(%s)\n"
-		   "\tFrom %s (%s)\n"
-		   "\tTo   %s (%s)\n",
+	printf(ARP_DEBUG_COLOR "ARP Eth=%04x/%d, IP=%04x/%d, Op=%04x" NONE "(%s)\n"
+						   "\tFrom " ETH_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR "%s" NONE ")\n"
+						   "\tTo   " ETH_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR "%s" NONE ")\n",
 		   swap16(arp->hdr_type), arp->hdr_addr_len, swap16(arp->proto_type), arp->ip_addr_len,
 		   swap16(arp->op), arp_op_to_string(arp->op),
 		   eth_addr_to_string(arp->src_eth_addr, src_eth_str),

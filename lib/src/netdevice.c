@@ -63,8 +63,8 @@ int netdevice_getdevice(const int define_n, char *dev_name) {
 	 */
 	char errbuf[PCAP_ERRBUF_SIZE];
 	if (pcap_findalldevs(&all_dev, errbuf) == PCAP_ERROR) {
-		fprintf(stderr, "%s:%d in %s()\n pcap_findalldevs(): %s\n", __FILE__, __LINE__, __func__,
-				errbuf);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s() pcap_findalldevs(): %s\n" NONE, __FILE__, __LINE__,
+				__func__, errbuf);
 		goto err_out;
 	}
 
@@ -74,7 +74,8 @@ int netdevice_getdevice(const int define_n, char *dev_name) {
 	 * we have to return NETDEVICE_ERROR
 	 */
 	if (all_dev == NULL) {
-		fprintf(stderr, "There's no interface found...\n");
+		fprintf(stderr, ERR_COLOR "%s:%d in %s() There's no interface found...\n" NONE, __FILE__,
+				__LINE__, __func__);
 		goto err_out;
 	}
 
@@ -121,8 +122,8 @@ int netdevice_getdevice(const int define_n, char *dev_name) {
 	 * is out of range of device list
 	 */
 	else {
-		fprintf(stderr, "%s:%d in %s(): selected device out of range\n", __FILE__, __LINE__,
-				__func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): selected device out of range\n" NONE, __FILE__,
+				__LINE__, __func__);
 		goto err_out;
 	}
 
@@ -160,7 +161,9 @@ netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 	 */
 	if ((device->capture_handle = pcap_open_live(device_name, MTU, PCAP_OPENFLAG_PROMISCUOUS,
 												 CAP_TIMEOUT, errbuf)) == NULL) {
-		fprintf(stderr, "%s:%d in %s(): pcap_open_live(): failed to open pcap capture handle\n",
+		fprintf(stderr,
+				ERR_COLOR
+				"%s:%d in %s(): pcap_open_live(): failed to open pcap capture handle\n" NONE,
 				__FILE__, __LINE__, __func__);
 		goto err_out;
 	}
@@ -169,7 +172,9 @@ netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 	 * Set the capture device into non-blocking mode
 	 */
 	if (pcap_setnonblock(device->capture_handle, 1, errbuf) == PCAP_ERROR) {
-		fprintf(stderr, "%s:%d in %s(): pcap_setnonblock(): failed to set non-blocking mode\n",
+		fprintf(stderr,
+				ERR_COLOR
+				"%s:%d in %s(): pcap_setnonblock(): failed to set non-blocking mode\n" NONE,
 				__FILE__, __LINE__, __func__);
 		goto err_out;
 	}
@@ -225,8 +230,8 @@ int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const by
 	 * payload exceed MTU
 	 */
 	if (payload_len > MTU) {
-		fprintf(stderr, "%s:%d in %s(): length of payload exceed MTU\n", __FILE__, __LINE__,
-				__func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): length of payload exceed MTU\n" NONE, __FILE__,
+				__LINE__, __func__);
 		return NETDEVICE_ERROR;
 	}
 
@@ -253,8 +258,8 @@ int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const by
 	 * return NETDEVICE_ERROR on error
 	 */
 	if (pcap_sendpacket(device->capture_handle, buf, frame_len) == PCAP_ERROR) {
-		fprintf(stderr, "%s:%d in %s(): pcap_sendpacket(): %s\n", __FILE__, __LINE__, __func__,
-				pcap_geterr(device->capture_handle));
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): pcap_sendpacket(): %s\n" NONE, __FILE__, __LINE__,
+				__func__, pcap_geterr(device->capture_handle));
 		return NETDEVICE_ERROR;
 	}
 
@@ -283,13 +288,13 @@ int netdevice_rx(netdevice_t *netdevice) {
 	 * and print it to stderr
 	 */
 	if (pkt_cnt == PCAP_ERROR) {
-		fprintf(stderr, "%s:%d in %s(): pcap_dispatch(): %s\n", __FILE__, __LINE__, __func__,
-				pcap_geterr(netdevice->capture_handle));
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): pcap_dispatch(): %s\n" NONE, __FILE__, __LINE__,
+				__func__, pcap_geterr(netdevice->capture_handle));
 		return NETDEVICE_ERROR;
 	} else if (pkt_cnt == PCAP_ERROR_BREAK) {
 		fprintf(stderr,
-				"%s:%d in %s(): pcap_dispatch(): the loop terminated due to a call to "
-				"pcap_breakloop() before any packets were processed\n ",
+				ERR_COLOR "%s:%d in %s(): pcap_dispatch(): the loop terminated due to a call to "
+						  "pcap_breakloop() before any packets were processed\n " NONE,
 				__FILE__, __LINE__, __func__);
 		return NETDEVICE_ERROR;
 	}
@@ -343,15 +348,15 @@ const byte *netdevice_get_my_mac(const netdevice_t *device) {
 
 	// Return NETDEVICE_ERROR_NULL is fopen() failed
 	if (addr_file == NULL) {
-		fprintf(stderr, "%s:%d in %s(): fopen(): error on open file\n", __FILE__, __LINE__,
-				__func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): fopen(): error on open file\n" NONE, __FILE__,
+				__LINE__, __func__);
 		goto err_out;
 	}
 
 	// Read the file
 	if (fscanf(addr_file, "%s", MAC_addr_str) < 0) {
-		fprintf(stderr, "%s:%d in %s(): fscanf(): error on read file\n", __FILE__, __LINE__,
-				__func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): fscanf(): error on read file\n" NONE, __FILE__,
+				__LINE__, __func__);
 		goto err_out;
 	}
 	fclose(addr_file);
