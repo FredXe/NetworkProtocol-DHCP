@@ -5,8 +5,6 @@
 #include "netdevice.h"
 #include "types.h"
 
-#define ETH_ARP 0x0608	 // Ethertype of ARP
-
 #define ARP_ERROR		-1	   // ARP common error
 #define ARP_UNKNOWN_MAC -2	   // ARP send() for unknown MAC address
 #define ARP_ERROR_NULL	NULL   // ARP common error with NULL

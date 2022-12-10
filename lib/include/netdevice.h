@@ -6,6 +6,9 @@
 
 #include "types.h"
 
+#define ETH_IPV4 0x0008	  // Ethertype of IPv4
+#define ETH_ARP	 0x0608	  // Ethertype of ARP
+
 #define ETH_ADDR_LEN 6		// Length of Ethernet address
 #define MTU			 1500	// Ethernet Maximum Transmission Unit
 #define MIN_ETH_LEN	 60		// Minimal length of Ethernet frame
