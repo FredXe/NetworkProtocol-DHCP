@@ -6,9 +6,6 @@
 #include "netdevice.h"
 #include "types.h"
 
-#define ETH_IPV4 0x0008
-#define ETH_ARP	 0x0608
-
 #define ETH_BUF_LEN 18
 #define MAC_BUF_LEN 18
 #define IP_BUF_LEN	16
