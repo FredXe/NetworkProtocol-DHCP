@@ -2,7 +2,6 @@
 
 #include <string.h>
 
-#include "netdevice.h"
 #include "util.h"
 
 struct {
