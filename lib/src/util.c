@@ -122,3 +122,47 @@ void print_data(const byte *data, const u_int data_len) {
 two_bytes swap16(two_bytes in) {
 	return ((in << 8) | (in >> 8));
 }
+
+/**
+ * Calculate the checksum defined in RFC 791.
+ * The checksum field is the 16-bit ones' complement of
+ * the ones' complement sum of all 16-bit words in the
+ * header. For purposes of computing the checksum,
+ * the value of the checksum field should be filled
+ * with zero.
+ * @param data
+ * @param len
+ * @return two_bytes
+ */
+two_bytes check_sum(byte *data, u_int len) {
+	// Iterator of data
+	uint16_t *buf = (uint16_t *)data;
+	// Pick the upper bound of len/2 as the count down
+	int data_cnt = (len + 1) / 2;
+	/**
+	 * The result, aka ummation of the data, is 2 bytes.
+	 * But we have to calculate the carry out to feed
+	 * back. So we have to use ad data type larger than
+	 * 2 bytes.
+	 */
+	uint32_t sum;
+
+	/**
+	 * Since it's little Endian while summation,
+	 * we have to swap16()
+	 */
+	for (sum = 0; data_cnt > 0; data_cnt--) {
+		sum += swap16(*buf++);
+	}
+
+	/**
+	 * Add the carry out of sum to sum itself,
+	 * do it two times since it might still have
+	 * carry out after the first time.
+	 */
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum = (sum >> 16) + (sum & 0xffff);
+
+	// Retrun the swapped result after calculate in 2 Byte data
+	return swap16((two_bytes)(~sum));
+}
