@@ -35,12 +35,12 @@ static void arp_dump(arp_t *arp);
  * @param dst_ip_addr Destination IP address we're requesting
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_request(netdevice_t *device, byte *dst_ip_a) {
+int arp_request(byte *dst_ip_a) {
 	eth_hdr_t eth_hdr;	 // Ethernet header for ARP request
 
 	// Build up Ethernet header
 	memcpy(eth_hdr.eth_dst, ETH_BROADCAST_ADDR, ETH_ADDR_LEN);
-	memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+	memcpy(eth_hdr.eth_src, netdevice_get_my_mac(), ETH_ADDR_LEN);
 	eth_hdr.eth_type = ETH_ARP;
 
 	arp_t arp_pkt;	 // ARP request packet
@@ -51,8 +51,8 @@ int arp_request(netdevice_t *device, byte *dst_ip_a) {
 	arp_pkt.hdr_addr_len = ETH_ADDR_LEN;
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REQUEST;
-	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
-	memcpy(arp_pkt.src_ip_addr, get_my_ip(device), IP_ADDR_LEN);
+	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(), ETH_ADDR_LEN);
+	memcpy(arp_pkt.src_ip_addr, get_my_ip(), IP_ADDR_LEN);
 	memset(arp_pkt.dst_eth_addr, 0, ETH_ADDR_LEN);
 	memcpy(arp_pkt.dst_ip_addr, dst_ip_a, IP_ADDR_LEN);
 
@@ -60,7 +60,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_a) {
 	 * Send the packet, free resources and
 	 * return ARP_ERROR if netdevice_xmit() error
 	 */
-	if (netdevice_xmit(device, &eth_hdr, (byte *)&arp_pkt, sizeof(arp_t)) == NETDEVICE_ERROR) {
+	if (netdevice_xmit(&eth_hdr, (byte *)&arp_pkt, sizeof(arp_t)) == NETDEVICE_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_xmit(): error\n" NONE, __FILE__,
 				__LINE__, __func__);
 		goto err_out;
@@ -85,12 +85,12 @@ err_out:
  * @param dst_ip_addr Destination IP address we're replying
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
+int arp_reply(byte *dst_eth_addr, byte *dst_ip_addr) {
 	eth_hdr_t eth_hdr;	 // Ethernet header
 
 	// Build up Ethernet header
 	memcpy(eth_hdr.eth_dst, dst_eth_addr, ETH_ADDR_LEN);
-	memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+	memcpy(eth_hdr.eth_src, netdevice_get_my_mac(), ETH_ADDR_LEN);
 	eth_hdr.eth_type = ETH_ARP;
 
 	arp_t arp_pkt;	 // ARP request packet
@@ -101,8 +101,8 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 	arp_pkt.hdr_addr_len = ETH_ADDR_LEN;
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REPLY;
-	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
-	memcpy(arp_pkt.src_ip_addr, get_my_ip(device), IP_ADDR_LEN);
+	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(), ETH_ADDR_LEN);
+	memcpy(arp_pkt.src_ip_addr, get_my_ip(), IP_ADDR_LEN);
 	memcpy(arp_pkt.dst_eth_addr, dst_eth_addr, ETH_ADDR_LEN);
 	memcpy(arp_pkt.dst_ip_addr, dst_ip_addr, IP_ADDR_LEN);
 
@@ -110,7 +110,7 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 	 * Send the packet, free resources and
 	 * return ARP_ERROR if netdevice_xmit() error
 	 */
-	if (netdevice_xmit(device, &eth_hdr, (byte *)&arp_pkt, sizeof(arp_t)) == NETDEVICE_ERROR) {
+	if (netdevice_xmit(&eth_hdr, (byte *)&arp_pkt, sizeof(arp_t)) == NETDEVICE_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_xmit(): error\n" NONE, __FILE__,
 				__LINE__, __func__);
 		goto err_out;
@@ -146,7 +146,7 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 	case ARP_OP_REQUEST:
 		// Reply if the request's destination address is mine
 		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(device), IP_ADDR_LEN) == 0)
-			arp_reply(device, arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
+			arp_reply(arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
 		break;
 	case ARP_OP_REPLY:
 		// Cache this ARP reply if we haven't
@@ -164,7 +164,7 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 				printf(ARP_DEBUG_COLOR "Resend ARP request" NONE " to %s\n",
 					   ip_addr_to_string((byte *)&arp_to_send_que.dst_ip_addr, NULL));
 #endif
-				arp_request(device, (byte *)&arp_to_send_que.dst_ip_addr);
+				arp_request((byte *)&arp_to_send_que.dst_ip_addr);
 			}
 		}
 		break;
@@ -186,19 +186,18 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
  * ARP_UNKNOWN_MAC on unknow destination
  * MAC address
  */
-int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
-			 u_int payload_len) {
+int arp_send(byte *dst_ip_addr, two_bytes eth_type, byte *payload, u_int payload_len) {
 	eth_hdr_t eth_hdr;	 // Ethernet header
 
 	if (arp_look_up(dst_ip_addr) != NULL) {
 
 		// Build up the Ethernet header
 		memcpy(eth_hdr.eth_dst, arp_look_up(dst_ip_addr), ETH_ADDR_LEN);
-		memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+		memcpy(eth_hdr.eth_src, netdevice_get_my_mac(), ETH_ADDR_LEN);
 		eth_hdr.eth_type = eth_type;
 
 		// Send the packet, return ARP_ERROR if netdevice_xmit() on error
-		if (netdevice_xmit(device, &eth_hdr, payload, payload_len) == NETDEVICE_ERROR) {
+		if (netdevice_xmit(&eth_hdr, payload, payload_len) == NETDEVICE_ERROR) {
 			fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_xmit(): error\n" NONE, __FILE__,
 					__LINE__, __func__);
 			return ARP_ERROR;
@@ -210,7 +209,7 @@ int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *p
 		arp_to_send_que.payload_len = payload_len;
 		memcpy(arp_to_send_que.payload, payload, payload_len);
 
-		arp_request(device, dst_ip_addr);
+		arp_request(dst_ip_addr);
 		return ARP_UNKNOWN_MAC;
 	}
 
@@ -229,8 +228,8 @@ int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *p
  * Resend the packet inside arp_to_send_que
  * @param device Interface to send
  */
-void arp_resend(netdevice_t *device) {
-	arp_send(device, (byte *)&arp_to_send_que.dst_ip_addr, arp_to_send_que.eth_type,
+void arp_resend() {
+	arp_send((byte *)&arp_to_send_que.dst_ip_addr, arp_to_send_que.eth_type,
 			 arp_to_send_que.payload, arp_to_send_que.payload_len);
 
 	// Reset the to send queue
