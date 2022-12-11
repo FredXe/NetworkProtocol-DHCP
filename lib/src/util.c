@@ -130,9 +130,9 @@ two_bytes swap16(two_bytes in) {
  * header. For purposes of computing the checksum,
  * the value of the checksum field should be filled
  * with zero.
- * @param data
- * @param len
- * @return two_bytes
+ * @param data Data to check sum
+ * @param len Length of data
+ * @return Two bytes result of checksum
  */
 two_bytes check_sum(byte *data, u_int len) {
 	// Iterator of data
