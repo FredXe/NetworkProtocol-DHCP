@@ -23,11 +23,53 @@ static ip_mac_addr arp_table[MAX_ARPIP_N];
 // The number of the ARP table's element
 static int arp_table_n = 0;
 
+static netdevice_t *default_device = NULL;
+
+// Definition of ARP private method
 static const byte *arp_look_up(const byte *ip_addr);
 static void arp_table_add(byte *ip_addr, byte *mac_addr);
 
 static const char *arp_op_to_string(two_bytes op);
 static void arp_dump(arp_t *arp);
+
+/**
+ * Initialize default_device
+ * @return 0 on success,
+ * ARP_ERROR on error.
+ */
+int arp_init() {
+	// Return if default device has been setted
+	if (default_device != NULL) {
+		fprintf(stderr,
+				ERR_COLOR "%s:%d in %s(): default_device has been set, this function should only "
+						  "be called once.\n" NONE,
+				__FILE__, __LINE__, __func__);
+		return ARP_ERROR;
+	}
+
+	char dev_name[64];	 // Device name buffer
+	if (netdevice_getdevice(0, dev_name) == NETDEVICE_ERROR) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_getdevice() error\n" NONE, __FILE__,
+				__LINE__, __func__);
+		return ARP_ERROR;
+	}
+
+	char errbuf[PCAP_ERRBUF_SIZE];	 // Error buf
+	if ((default_device = netdevice_open(dev_name, errbuf)) == NETDEVICE_ERROR) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_open() error\n" NONE, __FILE__,
+				__LINE__, __func__);
+		netdevice_close(default_device);
+		return ARP_ERROR;
+	}
+
+	if (netdevice_add_protocol(default_device, ETH_ARP, arp_main) != 0) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_add_protocol() error\n" NONE, __FILE__,
+				__LINE__, __func__);
+		return ARP_ERROR;
+	}
+
+	return 0;
+}
 
 /**
  * Send a ARP request packet to specific IP address
