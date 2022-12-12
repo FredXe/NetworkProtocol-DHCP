@@ -12,6 +12,7 @@
 #include "ip.h"
 #include "netdevice.h"
 #include "types.h"
+#include "udp.h"
 #include "util.h"
 
 int i = 0;
@@ -47,7 +48,8 @@ int main() {
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	// arp_request(device, ip);
-	netdevice_t *device = arp_init();
+	netdevice_t *device = ip_init();
+	ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
 
 	byte ip[IP_ADDR_LEN];
 	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);

@@ -64,7 +64,44 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
 	return header;
 }
 
-void ip_main(netdevice_t *device, const byte *packet, u_int length) {}
+/**
+ * IPv4 capture handle while received packet,
+ * than pass it to upper layer by callback
+ * function in IP protocol list
+ * @param device Device pass from netdevice
+ * @param packet Ethernet payload
+ * @param length Length of packet
+ */
+void ip_main(netdevice_t *device, const byte *packet, u_int length) {
+	if (length < (IP_MIN_HLEN * 4)) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): IPv4 packet only have header\n" NONE, __FILE__,
+				__LINE__, __func__);
+		return;
+	}
+
+	ipv4_hdr_t *header = (ipv4_hdr_t *)packet;
+
+	int data_len = length - sizeof(ipv4_hdr_t);	  // Length of data
+	byte *data;
+	data = packet + sizeof(ipv4_hdr_t);	  // Data of packet
+
+#if (DEBUG_IP == 1)
+	char src[IP_BUF_LEN], dst[IP_BUF_LEN];
+	printf(IP_2_DEBUG_COLOR "IP received" NONE ": " IP_DEBUG_COLOR "%s" NONE " => " IP_DEBUG_COLOR
+							"%s\n" NONE,
+		   ip_addr_to_string(header->src_ip, src), ip_addr_to_string(header->dst_ip, dst));
+#endif
+
+	ip_protocol_t *ip_it = ip_proto_list;
+	while (ip_it != NULL) {
+		if (ip_it->protocol == header->protocol) {
+			ip_it->callback(data, data_len);
+			break;
+		}
+		ip_it = ip_it->next;
+	}
+	return;
+}
 
 /**
  * Check if the protocol is inside the
