@@ -5,7 +5,7 @@
 
 #include "ip.h"
 
-const byte *get_my_ip() {
+const byte *get_my_ip(netdevice_t *device) {
 	return string_to_ip_addr("192.168.1.116");
 }
 

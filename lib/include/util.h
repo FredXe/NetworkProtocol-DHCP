@@ -23,8 +23,7 @@
 #define PURPLE		 "\033[0;35m"
 #define LIGHT_PURPLE "\033[1;35m"
 #define BROWN		 "\033[0;33m"
-#define YELLOW		 "\033[0;33m"
-#define LIGHT_YELLOW "\033[1;33m"
+#define YELLOW		 "\033[1;33m"
 #define LIGHT_GRAY	 "\033[0;37m"
 #define WHITE		 "\033[1;37m"
 
@@ -49,7 +48,7 @@
 /*================
  * Public Methods
  *================*/
-extern const byte *get_my_ip();
+extern const byte *get_my_ip(netdevice_t *device);
 extern const byte *string_to_ip_addr(const char *ip_addr_str);
 extern const char *ip_addr_to_string(byte *ip_addr, char *buf);
 extern const byte *string_to_eth_addr(const char *eth_addr_str);

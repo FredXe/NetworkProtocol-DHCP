@@ -52,5 +52,5 @@ typedef struct {
 /*================
  * Public Methods
  *================*/
-extern int ip_send();
+
 #endif

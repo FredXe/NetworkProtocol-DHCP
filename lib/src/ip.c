@@ -1,3 +1,3 @@
 #include "ip.h"
 
-static two_bytes ipv4_checksum(ipv4_hdr_t *header);
+#define ETH_IPV4 0x0008	  // Ethertype of IPv4
