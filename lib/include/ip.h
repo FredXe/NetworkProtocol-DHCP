@@ -72,8 +72,8 @@ typedef struct {
  * Public Methods
  *================*/
 extern netdevice_t *ip_init();
-extern ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byte *dst_ip,
-							   const u_int data_len);
+extern const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byte *dst_ip,
+									 const u_int data_len);
 extern int ip_chk_proto_list(const byte protocol);
 extern int ip_add_protocol(const byte protocol, ip_handler callback);
 extern int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len);
