@@ -227,10 +227,17 @@ err_out:
  * @param netdevice Specify the netdevice
  * @param eth_type Ethertype of new protocol
  * @param callback Callback function's pointer
- * @return 0 on seccess
+ * @return 0 on seccess, NETDEVICE_ERROR if
+ * protocol has been inside the list.
  */
 int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
 						   netdevice_handler callback) {
+	if (netdevice_chk_proto_list(netdevice, eth_type) == 1) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): protocol has been inside the list\n" NONE,
+				__FILE__, __LINE__, __func__);
+		return NETDEVICE_ERROR;
+	}
+
 	// Allocate memory for new protocol node
 	protocol_t *new_protocol = (protocol_t *)calloc(1, sizeof(protocol_t));
 
