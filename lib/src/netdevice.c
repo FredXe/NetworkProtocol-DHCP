@@ -64,8 +64,8 @@ static void _capture(u_char *device_u_char, const pcap_pkthdr_t *header, const b
  * then select one of it.
  * @param dev_sel_no '0' - select from terminal.
  * 'non0' - select directly from parameter
- * @param dev_name
- * @return 0 if success.
+ * @param dev_name Device name
+ * @return 0 if success, dev_name will be filled
  * NETDEVICE_ERROR if error
  */
 int netdevice_getdevice(const int define_n, char *dev_name) {
