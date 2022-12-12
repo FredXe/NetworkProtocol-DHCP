@@ -12,10 +12,21 @@
 #define IP_ERROR	  -1	 // IP common error
 #define IP_ERROR_NULL NULL	 // IP common error with NULL pointer
 
+typedef void (*ip_handler)(const byte *packet, const u_int length);
+
 /**
  * Script for allocate an IP address
  */
 #define IP_ALLOC(ip) byte *ip = (byte *)calloc(IP_ADDR_LEN, sizeof(byte))
+
+typedef struct ip_protocol ip_protocol_t;
+
+struct ip_protocol {
+	byte protocol;
+	ip_handler callback;
+	ip_protocol_t *head;
+	ip_protocol_t *next;
+};
 
 /*=================
  * Protocol Format
@@ -52,5 +63,11 @@ typedef struct {
 /*================
  * Public Methods
  *================*/
+extern netdevice_t *ip_init();
+extern ipv4_hdr_t ip_hdr_maker(byte protocol, ip_addr_t src_ip, ip_addr_t dst_ip);
+extern int ip_chk_proto_list(const byte protocol);
+extern int ip_add_protocol(const byte protocol, ip_handler callback);
+extern int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len);
+extern void ip_main(netdevice_t *device, const byte *packet, u_int length);
 
 #endif
