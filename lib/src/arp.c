@@ -29,8 +29,10 @@ static netdevice_t *default_device = NULL;
 static const byte *arp_look_up(const byte *ip_addr);
 static void arp_table_add(byte *ip_addr, byte *mac_addr);
 
+#if (DEBUG_ARP == 1)
 static const char *arp_op_to_string(two_bytes op);
 static void arp_dump(arp_t *arp);
+#endif
 
 /**
  * Initialize default_device
@@ -331,6 +333,7 @@ void arp_table_add(byte *ip_addr, byte *mac_addr) {
 #endif
 }
 
+#if (DEBUG_ARP == 1)
 /**
  * Convert ARP operation code into string
  * @param op ARP operation code
@@ -367,3 +370,4 @@ static void arp_dump(arp_t *arp) {
 		   ip_addr_to_string(arp->dst_ip_addr, dst_ip_str));
 	return;
 }
+#endif
