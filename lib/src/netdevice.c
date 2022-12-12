@@ -166,7 +166,7 @@ netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 
 	// Init protocol list by point it into NULL
 	device->proto_list = NULL;
-	device->device_name = device_name;
+	strcpy(device->device_name, device_name);
 
 	/**
 	 * Open a pcap capture handle by pcap_open_live(),

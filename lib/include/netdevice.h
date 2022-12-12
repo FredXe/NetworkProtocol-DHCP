@@ -29,7 +29,7 @@ typedef struct pcap_pkthdr pcap_pkthdr_t;
 struct netdevice {
 	pcap_t *capture_handle;	  // Pcap capture handle
 	protocol_t *proto_list;	  // Head of protocol list
-	char *device_name;		  // Device name of linked interface
+	char device_name[64];	  // Device name of linked interface
 };							  // Resources of netdevice
 
 struct protocol {
