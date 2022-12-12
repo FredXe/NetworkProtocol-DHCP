@@ -10,6 +10,27 @@ const byte ETH_BROADCAST_ADDR[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 const byte ETH_NULL_ADDR[] = {0, 0, 0, 0, 0, 0};
 
 /**
+ * Check if the Ethertype's protocol is
+ * inside the device
+ * @param device Device to check
+ * @param eth_type Target Ethertype
+ * @return 1 if found, 0 if not found
+ */
+int netdevice_chk_proto_list(const netdevice_t *device, const two_bytes eth_type) {
+	protocol_t *proto_it = device->proto_list;	 // Protocol Iterator
+
+	while (proto_it != NULL) {
+		// Return 1 if it has inside the protocol list
+		if (proto_it->eth_type == eth_type) {
+			return 1;
+		}
+		proto_it = proto_it->next;
+	}
+
+	return 0;
+}
+
+/**
  * Capture handle of netdevice, resolve the Ethernet header
  * and passing payload to upper matching protocol.
  * @param device_u_char	netdevice_t in u_char form

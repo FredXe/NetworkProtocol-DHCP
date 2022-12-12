@@ -54,6 +54,7 @@ extern const byte ETH_NULL_ADDR[ETH_ADDR_LEN];
 /*================
  * Public Methods
  *================*/
+extern int netdevice_chk_proto_list(const netdevice_t *device, const two_bytes eth_type);
 extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 extern netdevice_t *netdevice_open(char *device_name, char *errbuf);
 extern int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,

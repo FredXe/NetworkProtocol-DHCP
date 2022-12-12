@@ -52,6 +52,9 @@ int main() {
 	// arp_request(device, ip);
 	netdevice_t *device = arp_init();
 	arp_send(NULL, ip, ETH_IPV4, payload, 86);
+	netdevice_add_protocol(device, ETH_IPV4, callback_test);
+	printf("%d\n", netdevice_chk_proto_list(device, ETH_IPV4));
+	printf("%d\n", netdevice_chk_proto_list(device, ETH_ARP));
 	while (netdevice_rx(device) >= 0)
 		;
 	netdevice_close(device);
