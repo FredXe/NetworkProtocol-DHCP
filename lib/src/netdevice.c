@@ -9,44 +9,45 @@
 const byte ETH_BROADCAST_ADDR[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 const byte ETH_NULL_ADDR[] = {0, 0, 0, 0, 0, 0};
 
-static netdevice_t *default_device = NULL;
+static netdevice_t *interface_device = NULL;
 
-static int netdevice_init();
+static int netdevice_init(const two_bytes eth_type, netdevice_handler callback);
 static int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 static netdevice_t *netdevice_open(char *device_name, char *errbuf);
 
-/**
- * Initialize the default_device
- * @return 0 on success, NETDEVICE_ERROR on error
- */
-static int netdevice_init() {
-	// Return if default interface has been set
-	if (default_device != NULL) {
+static int netdevice_init(const two_bytes eth_type, netdevice_handler callback) {
+	if (interface_device != NULL) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): default interface is already setted up\n" NONE,
 				__FILE__, __LINE__, __func__);
 		return NETDEVICE_ERROR;
 	}
 
-	static char dev_name[256];	 // Default interface device name
-	// Return if get device error
+	static char dev_name[256];
 	if (netdevice_getdevice(0, dev_name) == NETDEVICE_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_getdevice() error\n" NONE, __FILE__,
 				__LINE__, __func__);
 		return NETDEVICE_ERROR;
 	}
 
-	char errbuf[PCAP_ERRBUF_SIZE];	 // Error buffer
-	// Return if open device error
-	if ((default_device = netdevice_open(dev_name, errbuf)) == NETDEVICE_ERROR_NULL) {
+	char errbuf[PCAP_ERRBUF_SIZE];
+	if ((interface_device = netdevice_open(dev_name, errbuf)) == NETDEVICE_ERROR_NULL) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_open() error\n" NONE, __FILE__,
 				__LINE__, __func__);
 		return NETDEVICE_ERROR;
 	}
 
 #if (DEBUG_NETDEVICE == 1)
-	printf(ETH_DEBUG_COLOR "default_device has been set to :" ETH_2_DEBUG_COLOR "%s" NONE,
+	printf(ETH_DEBUG_COLOR "interface_device has been set to :" ETH_2_DEBUG_COLOR "%s" NONE,
 		   dev_name);
 #endif
+
+	if (eth_type != ETH_TYPE_NULL) {
+		if (netdevice_add_protocol(eth_type, callback) != 0) {
+			fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_add_protocol() error\n" NONE,
+					__FILE__, __LINE__, __func__);
+			return NETDEVICE_ERROR;
+		}
+	}
 
 	return 0;
 }
@@ -106,9 +107,9 @@ static void _capture(u_char *device_u_char, const pcap_pkthdr_t *header, const b
  * then select one of it.
  * @param dev_sel_no '0' - select from terminal.
  * 'non0' - select directly from parameter
- * @param dev_name Interface device name
- * @return 0 on success, dev_name will be filled,
- * return NETDEVICE_ERROR on error
+ * @param dev_name
+ * @return 0 if success.
+ * NETDEVICE_ERROR if error
  */
 static int netdevice_getdevice(const int define_n, char *dev_name) {
 	pcap_if_t *all_dev;
@@ -198,30 +199,31 @@ err_out:
 /**
  * Open a pcap capture interface with promiscuous mode,
  * and set it into non-blocking mode
- * @param device_name Device name select
- * @param errbuf Errbuf will be fill if there's error
- * @return Netdevice, NETDEVICE_ERROR_NULL if error,
- * errbuf will be filled
+ * @param device_name device name select
+ * @param errbuf errbuf will be fill if there's error
+ * @return Netdevice, NETDEVICE_ERROR_NULL if error
  */
 static netdevice_t *netdevice_open(char *device_name, char *errbuf) {
-	if (default_device != NULL) {
-		fprintf(stderr, ERR_COLOR "%s:%d in %s(): default_device has been set" NONE, __FILE__,
-				__LINE__, __func__);
+	if (interface_device != NULL) {
+		fprintf(stderr,
+				ERR_COLOR "%s:%d in %s(): interface_device has been set, shouldn't call netdevice "
+						  "open directly\n" NONE,
+				__FILE__, __LINE__, __func__);
 	}
 
 	// Allocate space for device
-	netdevice_t *default_device = (netdevice_t *)calloc(1, sizeof(netdevice_t));
+	netdevice_t *interface_device = (netdevice_t *)calloc(1, sizeof(netdevice_t));
 
 	// Init protocol list by point it into NULL
-	default_device->proto_list = NULL;
-	default_device->device_name = device_name;
+	interface_device->proto_list = NULL;
+	interface_device->device_name = device_name;
 
 	/**
 	 * Open a pcap capture handle by pcap_open_live(),
 	 * free resources and return NETDEVICE_ERROR_NULL
 	 * if open failure
 	 */
-	if ((default_device->capture_handle = pcap_open_live(
+	if ((interface_device->capture_handle = pcap_open_live(
 			 device_name, MTU, PCAP_OPENFLAG_PROMISCUOUS, CAP_TIMEOUT, errbuf)) == NULL) {
 		fprintf(stderr,
 				ERR_COLOR
@@ -233,7 +235,7 @@ static netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 	/**
 	 * Set the capture device into non-blocking mode
 	 */
-	if (pcap_setnonblock(default_device->capture_handle, 1, errbuf) == PCAP_ERROR) {
+	if (pcap_setnonblock(interface_device->capture_handle, 1, errbuf) == PCAP_ERROR) {
 		fprintf(stderr,
 				ERR_COLOR
 				"%s:%d in %s(): pcap_setnonblock(): failed to set non-blocking mode\n" NONE,
@@ -241,28 +243,28 @@ static netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 		goto err_out;
 	}
 
-	return default_device;
+	return interface_device;
 
 /**
  * Label for exit with error.
  * Free resources and return NETDEVICE_ERROR_NULL
  */
 err_out:
-	netdevice_close(default_device);
+	netdevice_close(interface_device);
 	return NETDEVICE_ERROR_NULL;
 }
 
 /**
  * API for upper layer to sign up the protocol's
  * Ethertype and the callback function
+ * @param netdevice Specify the netdevice
  * @param eth_type Ethertype of new protocol
  * @param callback Callback function's pointer
  * @return 0 on seccess
  */
 int netdevice_add_protocol(const two_bytes eth_type, netdevice_handler callback) {
-	// Init netdevice if it hasn't been set
-	if (default_device == NULL) {
-		netdevice_init();
+	if (interface_device == NULL) {
+		netdevice_init(eth_type, callback);
 	}
 
 	// Allocate memory for new protocol node
@@ -273,22 +275,23 @@ int netdevice_add_protocol(const two_bytes eth_type, netdevice_handler callback)
 	new_protocol->callback = callback;
 
 	// Insert new protocol to the head of the list
-	new_protocol->next = default_device->proto_list;
-	default_device->proto_list = new_protocol;
+	new_protocol->next = interface_device->proto_list;
+	interface_device->proto_list = new_protocol;
 
 	return 0;
 }
 
 /**
  * Send a Ethernet frame out using pcap_sendpacket()
+ * @param device To specify the pcap capture handle
  * @param eth_hdr Ethernet header
  * @param payload Ethernet payload
  * @param payload_len Length of payload
  * @return 0 on seccuss, NETDEVICE_ERROR on error
  */
 int netdevice_xmit(const eth_hdr_t *eth_hdr, const byte *payload, const u_int payload_len) {
-	if (default_device == NULL) {
-		netdevice_init();
+	if (interface_device == NULL) {
+		netdevice_init(ETH_TYPE_NULL, NULL);
 	}
 
 	/**
@@ -334,9 +337,9 @@ int netdevice_xmit(const eth_hdr_t *eth_hdr, const byte *payload, const u_int pa
 	 * Send packet with pcap_sendpacket(),
 	 * return NETDEVICE_ERROR on error
 	 */
-	if (pcap_sendpacket(default_device->capture_handle, buf, frame_len) == PCAP_ERROR) {
+	if (pcap_sendpacket(interface_device->capture_handle, buf, frame_len) == PCAP_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): pcap_sendpacket(): %s\n" NONE, __FILE__, __LINE__,
-				__func__, pcap_geterr(default_device->capture_handle));
+				__func__, pcap_geterr(interface_device->capture_handle));
 		return NETDEVICE_ERROR;
 	}
 
@@ -346,20 +349,17 @@ int netdevice_xmit(const eth_hdr_t *eth_hdr, const byte *payload, const u_int pa
 /**
  * Process all the packets in one buffer using pcap_dispatch(),
  * and register the callback function of netdevice
- * @param netdevice Netdevice that capture packets from.
- * Set to NULL to capture from default default_device
+ * @param netdevice Netdevice that capture packets from
  * @return The number of packets processed on seccess;
  * NETDEVICE_ERROR on failure
  */
 int netdevice_rx(netdevice_t *netdevice) {
-	// Default capture from default_device.
 	if (netdevice == NULL) {
-		if (default_device == NULL) {
+		if (interface_device == NULL) {
 			netdevice_init(ETH_TYPE_NULL, NULL);
 		}
-		netdevice = default_device;
+		netdevice = interface_device;
 	}
-
 	// Packet count that pcap_dispatch() returns
 	int pkt_cnt = 0;
 
@@ -390,15 +390,13 @@ int netdevice_rx(netdevice_t *netdevice) {
 
 /**
  * Free all the resources of netdevice
- * @param device Device to close
  */
 void netdevice_close(netdevice_t *device) {
-	// Set device to default_device if device is NULL
 	if (device == NULL) {
-		if (default_device == NULL) {
-			netdevice_init();
+		if (interface_device == NULL) {
+			netdevice_init(ETH_TYPE_NULL, NULL);
 		}
-		device = default_device;
+		device = interface_device;
 	}
 
 	protocol_t *protocol;		// Protocol_t* to go through protocol list
@@ -416,7 +414,7 @@ void netdevice_close(netdevice_t *device) {
 	// close capture handle in device
 	pcap_close(device->capture_handle);
 	// free device itself
-	free(default_device);
+	free(interface_device);
 
 	return;
 }
@@ -429,14 +427,14 @@ void netdevice_close(netdevice_t *device) {
  * NETDEVICE_ERROR_NULL on error
  */
 const byte *netdevice_get_my_mac() {
-	if (default_device == NULL) {
+	if (interface_device == NULL) {
 		netdevice_init(ETH_TYPE_NULL, NULL);
 	}
 
 	char addr_file_name[256] = "/sys/class/net/";	// MAC address's file name on system
 
 	// Append device name to file name
-	strcat(addr_file_name, default_device->device_name);
+	strcat(addr_file_name, interface_device->device_name);
 	strcat(addr_file_name, "/address");
 
 	char MAC_addr_str[18];	 // Buffer for the file reading
