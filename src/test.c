@@ -39,9 +39,6 @@ int main() {
 	// byte pay[10];
 	// netdevice_xmit(device, eth_hdr, pay, 0);
 	// netdevice_add_protocol(device, IPV4_ETH_TYPE, callback_test);
-	byte ip[IP_ADDR_LEN];
-	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
-	byte payload[86] = "FREDDY";
 	// netdevice_rx(device);
 	// byte ip[IP_ADDR_LEN];
 	// memcpy(ip, string_to_ip_addr("192.168.1.1"), IP_ADDR_LEN);
@@ -51,12 +48,17 @@ int main() {
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	netdevice_t *device = arp_init();
-	arp_send(NULL, ip, ETH_IPV4, payload, 86);
+
+	byte ip[IP_ADDR_LEN];
+	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
+	ipv4_hdr_t ip_header = ip_hdr_maker(0x01, *(ip_addr_t *)get_my_ip(device), *(ip_addr_t *)ip, 0);
+
 	netdevice_add_protocol(device, ETH_IPV4, callback_test);
 	printf("%d\n", netdevice_chk_proto_list(device, ETH_IPV4));
 	printf("%d\n", netdevice_chk_proto_list(device, ETH_ARP));
 	while (netdevice_rx(device) >= 0)
-		;
+		arp_send(NULL, ip, ETH_IPV4, (byte *)&ip_header, 20);
+	// ;
 	netdevice_close(device);
 	free(eth_hdr);
 	// free(dst_eth);
