@@ -175,10 +175,8 @@ netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 	 */
 	if ((device->capture_handle = pcap_open_live(device_name, MTU, PCAP_OPENFLAG_PROMISCUOUS,
 												 CAP_TIMEOUT, errbuf)) == NULL) {
-		fprintf(stderr,
-				ERR_COLOR
-				"%s:%d in %s(): pcap_open_live(): failed to open pcap capture handle\n" NONE,
-				__FILE__, __LINE__, __func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): pcap_open_live(): %s\n" NONE, __FILE__, __LINE__,
+				__func__, errbuf);
 		goto err_out;
 	}
 
@@ -186,10 +184,8 @@ netdevice_t *netdevice_open(char *device_name, char *errbuf) {
 	 * Set the capture device into non-blocking mode
 	 */
 	if (pcap_setnonblock(device->capture_handle, 1, errbuf) == PCAP_ERROR) {
-		fprintf(stderr,
-				ERR_COLOR
-				"%s:%d in %s(): pcap_setnonblock(): failed to set non-blocking mode\n" NONE,
-				__FILE__, __LINE__, __func__);
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): pcap_setnonblock(): %s\n" NONE, __FILE__,
+				__LINE__, __func__, errbuf);
 		goto err_out;
 	}
 
