@@ -135,7 +135,7 @@ err_out:
  * @param packet ARP protocol packet
  * @param length Length of packet
  */
-void arp_main(netdevice_t *device, const byte *packet, u_int length) {
+void arp_main(const byte *packet, u_int length) {
 	arp_t *arp_pkt = (arp_t *)packet;	// ARP packet
 
 #if (DEBUG_ARP == 1)
@@ -145,12 +145,12 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 	switch (arp_pkt->op) {
 	case ARP_OP_REQUEST:
 		// Reply if the request's destination address is mine
-		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(device), IP_ADDR_LEN) == 0)
+		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(), IP_ADDR_LEN) == 0)
 			arp_reply(arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
 		break;
 	case ARP_OP_REPLY:
 		// Cache this ARP reply if we haven't
-		if (GET_IP(arp_pkt->dst_ip_addr) == GET_IP(get_my_ip(device)) &&
+		if (GET_IP(arp_pkt->dst_ip_addr) == GET_IP(get_my_ip()) &&
 			arp_look_up(arp_pkt->src_ip_addr) == NULL)
 			arp_table_add(arp_pkt->src_ip_addr, arp_pkt->src_eth_addr);
 
