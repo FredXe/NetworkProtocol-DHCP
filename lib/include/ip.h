@@ -27,10 +27,9 @@ typedef void (*ip_handler)(const byte *packet, const u_int length);
 typedef struct ip_protocol ip_protocol_t;
 
 struct ip_protocol {
-	byte protocol;
-	ip_handler callback;
-	ip_protocol_t *head;
-	ip_protocol_t *next;
+	byte protocol;		   // IP protocol number
+	ip_handler callback;   // Callback function of upper layer
+	ip_protocol_t *next;   // Next element
 };
 
 /*=================
@@ -50,7 +49,7 @@ typedef struct {
 	two_bytes flag_frgofst;
 	// Time to live
 	byte ttl;
-	// Protocol of upper layer
+	// IP protocol number
 	byte protocol;
 	// Header Checksum
 	two_bytes hdr_chksum;

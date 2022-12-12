@@ -3,12 +3,15 @@
 #include "arp.h"
 #include "util.h"
 
+static ip_protocol_t *ip_proto_list = NULL;
+
 static two_bytes ip_checksum(const ipv4_hdr_t header_in);
 
 /**
  * Initialize IP by initialize ARP and regist
  * IPv4 to netdevice
- * @return netdevice_t* Interface
+ * @return netdevice_t* Interface,
+ * IP_ERROR_NULL if error.
  */
 netdevice_t *ip_init() {
 	// Initialize ARP and get device
@@ -62,6 +65,55 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
 }
 
 void ip_main(netdevice_t *device, const byte *packet, u_int length) {}
+
+/**
+ * Check if the protocol is inside the
+ * IP protocol list
+ * @param protocol Key
+ * @return 1 on found,
+ * 0 on not found
+ */
+int ip_chk_proto_list(const byte protocol) {
+	ip_protocol_t *ip_it = ip_proto_list;	// Iterator of IP protocol list
+
+	// Go through the IP protocol list
+	while (ip_it != NULL) {
+		if (ip_it->protocol == protocol)
+			return 1;
+		ip_it = ip_it->next;
+	}
+	return 0;
+}
+
+/**
+ * API for upper layer to regist IP
+ * protocol and it's callback function
+ * @param protocol IP protocol number
+ * @param callback Callback function of
+ * upper layer
+ * @return 0 on success,
+ * IP_ERROR if failed
+ */
+int ip_add_protocol(const byte protocol, ip_handler callback) {
+	if (ip_chk_proto_list(protocol) == 1) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): protocol is inside the list\n" NONE, __FILE__,
+				__LINE__, __func__);
+		return IP_ERROR;
+	}
+
+	// New protocol
+	ip_protocol_t *new_proto = (ip_protocol_t *)calloc(1, sizeof(ip_protocol_t));
+
+	// Set the protocol
+	new_proto->protocol = protocol;
+	new_proto->callback = callback;
+
+	// Insert it into the list head
+	new_proto->next = ip_proto_list;
+	ip_proto_list = new_proto;
+
+	return 0;
+}
 
 /**
  * Checksum for IPv4 header
