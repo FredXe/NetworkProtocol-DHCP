@@ -134,7 +134,7 @@ two_bytes swap16(two_bytes in) {
  * @param len Length of data
  * @return Two bytes result of checksum
  */
-two_bytes check_sum(byte *data, u_int len) {
+two_bytes checksum(byte *data, u_int len) {
 	// Iterator of data
 	uint16_t *buf = (uint16_t *)data;
 	// Pick the upper bound of len/2 as the count down
