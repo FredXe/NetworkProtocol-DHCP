@@ -2,6 +2,7 @@
 #define __IP_H__
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "netdevice.h"
 #include "types.h"
@@ -55,9 +56,9 @@ typedef struct {
 	two_bytes hdr_chksum;
 
 	// Source IP address
-	ip_addr_t src_ip;
+	byte src_ip[IP_ADDR_LEN];
 	// Destination IP address
-	ip_addr_t dst_ip;
+	byte dst_ip[IP_ADDR_LEN];
 } ipv4_hdr_t;	// IPv4 header format
 
 // Script to read version & hlen in ver_hlen
@@ -65,11 +66,13 @@ typedef struct {
 #define HLEN(ip_hdr)		((ip_hdr)->ver_hlen & 0x0F)
 #define VER_HLEN(ver, hlen) (((ver) << 4) + hlen)
 
+#define IP_COPY(dst, src) (memcpy((dst), (src), IP_ADDR_LEN))
+
 /*================
  * Public Methods
  *================*/
 extern netdevice_t *ip_init();
-extern ipv4_hdr_t ip_hdr_maker(const byte protocol, const ip_addr_t src_ip, const ip_addr_t dst_ip,
+extern ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byte *dst_ip,
 							   const u_int data_len);
 extern int ip_chk_proto_list(const byte protocol);
 extern int ip_add_protocol(const byte protocol, ip_handler callback);

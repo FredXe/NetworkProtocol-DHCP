@@ -17,7 +17,7 @@ netdevice_t *ip_init() {
 	return device;
 }
 
-ipv4_hdr_t ip_hdr_maker(const byte protocol, const ip_addr_t src_ip, const ip_addr_t dst_ip,
+ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byte *dst_ip,
 						const u_int data_len) {
 	ipv4_hdr_t header;
 	int hdr_len = sizeof(ipv4_hdr_t);	  // Length of header
@@ -35,8 +35,8 @@ ipv4_hdr_t ip_hdr_maker(const byte protocol, const ip_addr_t src_ip, const ip_ad
 	// Compute later
 	header.hdr_chksum = 0;
 
-	header.src_ip = src_ip;
-	header.dst_ip = dst_ip;
+	IP_COPY(header.src_ip, src_ip);
+	IP_COPY(header.dst_ip, dst_ip);
 
 	header.hdr_chksum = ip_checksum(&header);
 
