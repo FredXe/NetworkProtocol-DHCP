@@ -5,7 +5,7 @@
 
 #include "ip.h"
 
-const byte *get_my_ip(netdevice_t *device) {
+const ip_addr_t get_my_ip(netdevice_t *device) {
 	return string_to_ip_addr("192.168.1.116");
 }
 
@@ -13,32 +13,34 @@ const byte *get_my_ip(netdevice_t *device) {
  * Convert string into byte array
  * @param ip_addr_str *.*.*.* format string
  * @return byte* point to ip_addr,
- * NULL on error
+ * -1 on error
  */
-const byte *string_to_ip_addr(const char *ip_addr_str) {
+const ip_addr_t string_to_ip_addr(const char *ip_addr_str) {
 	if (strlen(ip_addr_str) > 15) {
 		fprintf(stderr, "%s:%d in %s(): length of ip_addr_str exceed\n", __FILE__, __LINE__,
 				__func__);
-		return NULL;
+		return -1;
 	}
-	static byte ip_buf[IP_ADDR_LEN];
+	ip_addr_t ip_buf;				 // IP buf
+	byte *ip_it = (byte *)&ip_buf;	 // IP_buf iterator
 	int int_buf[IP_ADDR_LEN];
 	sscanf(ip_addr_str, "%d.%d.%d.%d", int_buf, int_buf + 1, int_buf + 2, int_buf + 3);
-	ip_buf[0] = int_buf[0];
-	ip_buf[1] = int_buf[1];
-	ip_buf[2] = int_buf[2];
-	ip_buf[3] = int_buf[3];
-	return ip_buf;
+	ip_it[0] = (byte)int_buf[0];
+	ip_it[1] = (byte)int_buf[1];
+	ip_it[2] = (byte)int_buf[2];
+	ip_it[3] = (byte)int_buf[3];
+	return swap32(ip_buf);
 }
 
 /**
  * Convert byte array IP address into string
- * @param ip_addr IP address in bits form
+ * @param ip_addr_in IP address in bits form
  * @param buf String buffer to be use
  * @return ip_addr in *.*.*.* format string
  */
-const char *ip_addr_to_string(byte *ip_addr, char *buf) {
+const char *ip_addr_to_string(const ip_addr_t ip_addr_in, char *buf) {
 	static char ip_buf[16];
+	byte *ip_addr = (byte *)&ip_addr_in;
 	if (buf == NULL)
 		buf = ip_buf;
 	sprintf(buf, "%d.%d.%d.%d", (int)ip_addr[0], (int)ip_addr[1], (int)ip_addr[2], (int)ip_addr[3]);
@@ -119,8 +121,13 @@ void print_data(const byte *data, const u_int data_len) {
  * @param in Input 2 bytes
  * @return swaped bytes
  */
-two_bytes swap16(two_bytes in) {
+two_bytes swap16(const two_bytes in) {
 	return ((in << 8) | (in >> 8));
+}
+
+u_int32_t swap32(const u_int32_t in) {
+	byte *it = (byte *)&in;
+	return (u_int32_t)(it[0] << 24 | it[1] << 16 | it[2] << 8 | it[3]);
 }
 
 /**

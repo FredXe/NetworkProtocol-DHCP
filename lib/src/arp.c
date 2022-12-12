@@ -14,7 +14,7 @@ struct {
 #define MAX_ARPIP_N 8	// The max number of ARP table's elements
 
 typedef struct {
-	byte ip_addr[IP_ADDR_LEN];	   // IP address
+	ip_addr_t ip_addr;			   // IP address
 	byte mac_addr[ETH_ADDR_LEN];   // MAC address
 } ip_mac_addr;					   // IP - MAC reference
 
@@ -26,8 +26,8 @@ static int arp_table_n = 0;
 static netdevice_t *default_device = NULL;
 
 // Definition of ARP private method
-static const byte *arp_look_up(const byte *ip_addr);
-static void arp_table_add(byte *ip_addr, byte *mac_addr);
+static const byte *arp_look_up(const ip_addr_t ip_addr);
+static void arp_table_add(const ip_addr_t ip_addr, byte *mac_addr);
 
 #if (DEBUG_ARP == 1)
 static const char *arp_op_to_string(two_bytes op);
@@ -79,7 +79,7 @@ netdevice_t *arp_init() {
  * @param dst_ip_addr Destination IP address we're requesting
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_request(netdevice_t *device, byte *dst_ip_a) {
+int arp_request(netdevice_t *device, const ip_addr_t dst_ip_addr) {
 	eth_hdr_t eth_hdr;	 // Ethernet header for ARP request
 
 	// Build up Ethernet header
@@ -96,9 +96,9 @@ int arp_request(netdevice_t *device, byte *dst_ip_a) {
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REQUEST;
 	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
-	memcpy(arp_pkt.src_ip_addr, get_my_ip(device), IP_ADDR_LEN);
+	arp_pkt.src_ip_addr = get_my_ip(device);
 	memset(arp_pkt.dst_eth_addr, 0, ETH_ADDR_LEN);
-	memcpy(arp_pkt.dst_ip_addr, dst_ip_a, IP_ADDR_LEN);
+	arp_pkt.dst_ip_addr = dst_ip_addr;
 
 	/**
 	 * Send the packet, free resources and
@@ -112,7 +112,7 @@ int arp_request(netdevice_t *device, byte *dst_ip_a) {
 
 #if (DEBUG_ARP_REQUEST == 1)
 	printf(ARP_2_DEBUG_COLOR "ARP request" NONE " to " IP_DEBUG_COLOR "%s" NONE "\n",
-		   ip_addr_to_string(dst_ip_a, NULL));
+		   ip_addr_to_string(dst_ip_addr, NULL));
 #endif
 
 	return 0;
@@ -129,7 +129,7 @@ err_out:
  * @param dst_ip_addr Destination IP address we're replying
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
+int arp_reply(netdevice_t *device, byte *dst_eth_addr, const ip_addr_t dst_ip_addr) {
 	eth_hdr_t eth_hdr;	 // Ethernet header
 
 	// Build up Ethernet header
@@ -146,9 +146,9 @@ int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REPLY;
 	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
-	memcpy(arp_pkt.src_ip_addr, get_my_ip(device), IP_ADDR_LEN);
+	arp_pkt.src_ip_addr = get_my_ip(device);
 	memcpy(arp_pkt.dst_eth_addr, dst_eth_addr, ETH_ADDR_LEN);
-	memcpy(arp_pkt.dst_ip_addr, dst_ip_addr, IP_ADDR_LEN);
+	arp_pkt.dst_ip_addr = dst_ip_addr;
 
 	/**
 	 * Send the packet, free resources and
@@ -189,26 +189,25 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 	switch (arp_pkt->op) {
 	case ARP_OP_REQUEST:
 		// Reply if the request's destination address is mine
-		if (memcmp(arp_pkt->dst_ip_addr, get_my_ip(device), IP_ADDR_LEN) == 0)
+		if (arp_pkt->dst_ip_addr == get_my_ip(device))
 			arp_reply(device, arp_pkt->src_eth_addr, arp_pkt->src_ip_addr);
 		break;
 	case ARP_OP_REPLY:
 		// Cache this ARP reply if we haven't
-		if (GET_IP(arp_pkt->dst_ip_addr) == GET_IP(get_my_ip(device)) &&
-			arp_look_up(arp_pkt->src_ip_addr) == NULL)
+		if (arp_pkt->dst_ip_addr == get_my_ip(device) && arp_look_up(arp_pkt->src_ip_addr) == NULL)
 			arp_table_add(arp_pkt->src_ip_addr, arp_pkt->src_eth_addr);
 
 		// If there's packet in the Queue
 		if (arp_to_send_que.payload_len > 0) {
 			// Send the packet if we got the ip from the request
-			if (GET_IP(arp_pkt->src_ip_addr) == arp_to_send_que.dst_ip_addr) {
+			if (arp_pkt->src_ip_addr == arp_to_send_que.dst_ip_addr) {
 				arp_resend(device);
 			} else {
 #if (DEBUG_ARP == 1)
 				printf(ARP_DEBUG_COLOR "Resend ARP request" NONE " to %s\n",
-					   ip_addr_to_string((byte *)&arp_to_send_que.dst_ip_addr, NULL));
+					   ip_addr_to_string(arp_to_send_que.dst_ip_addr, NULL));
 #endif
-				arp_request(device, (byte *)&arp_to_send_que.dst_ip_addr);
+				arp_request(device, arp_to_send_que.dst_ip_addr);
 			}
 		}
 		break;
@@ -231,7 +230,7 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
  * ARP_UNKNOWN_MAC on unknow destination
  * MAC address
  */
-int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
+int arp_send(netdevice_t *device, ip_addr_t dst_ip_addr, two_bytes eth_type, byte *payload,
 			 u_int payload_len) {
 	if (default_device == NULL) {
 		fprintf(
@@ -263,7 +262,7 @@ int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *p
 		}
 	} else {
 		// Store the packet to the to_send_que
-		arp_to_send_que.dst_ip_addr = GET_IP(dst_ip_addr);
+		arp_to_send_que.dst_ip_addr = dst_ip_addr;
 		arp_to_send_que.eth_type = eth_type;
 		arp_to_send_que.payload_len = payload_len;
 		memcpy(arp_to_send_que.payload, payload, payload_len);
@@ -288,8 +287,8 @@ int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *p
  * @param device Interface to send
  */
 void arp_resend(netdevice_t *device) {
-	arp_send(device, (byte *)&arp_to_send_que.dst_ip_addr, arp_to_send_que.eth_type,
-			 arp_to_send_que.payload, arp_to_send_que.payload_len);
+	arp_send(device, arp_to_send_que.dst_ip_addr, arp_to_send_que.eth_type, arp_to_send_que.payload,
+			 arp_to_send_que.payload_len);
 
 	// Reset the to send queue
 	memset(arp_to_send_que.payload, 1, arp_to_send_que.payload_len);
@@ -304,11 +303,11 @@ void arp_resend(netdevice_t *device) {
  * @return MAC address of ip_addr,
  * NULL if not found
  */
-const byte *arp_look_up(const byte *ip_addr) {
+const byte *arp_look_up(const ip_addr_t ip_addr) {
 	// Go through ARP table
 	for (int i = 0; i <= arp_table_n; i++) {
 		// Return if ARP table has it inside
-		if (memcmp(ip_addr, arp_table[i].ip_addr, IP_ADDR_LEN) == 0)
+		if (ip_addr == arp_table[i].ip_addr)
 			return arp_table[i].mac_addr;
 	}
 	return NULL;
@@ -319,9 +318,9 @@ const byte *arp_look_up(const byte *ip_addr) {
  * @param ip_addr IP address
  * @param mac_addr MAC address
  */
-void arp_table_add(byte *ip_addr, byte *mac_addr) {
+void arp_table_add(const ip_addr_t ip_addr, byte *mac_addr) {
 	arp_table_n = (arp_table_n + 1) % MAX_ARPIP_N;
-	memcpy(arp_table[arp_table_n].ip_addr, ip_addr, IP_ADDR_LEN);
+	arp_table[arp_table_n].ip_addr = ip_addr;
 	memcpy(arp_table[arp_table_n].mac_addr, mac_addr, ETH_ADDR_LEN);
 
 #if (DEBUG_ARP_CACHE == 1)
@@ -329,7 +328,7 @@ void arp_table_add(byte *ip_addr, byte *mac_addr) {
 
 	printf(ARP_2_DEBUG_COLOR "ARP cached #%d" NONE ": " IP_DEBUG_COLOR "%s" NONE
 							 " - " IP_DEBUG_COLOR "%s" NONE "\n",
-		   arp_table_n, ip_addr_to_string(ip_addr, ip_buf), ip_addr_to_string(mac_addr, mac_buf));
+		   arp_table_n, ip_addr_to_string(ip_addr, ip_buf), eth_addr_to_string(mac_addr, mac_buf));
 #endif
 }
 
