@@ -34,41 +34,41 @@ static void arp_dump(arp_t *arp);
 
 /**
  * Initialize default_device
- * @return 0 on success,
- * ARP_ERROR on error.
+ * @return default_device on success,
+ * ARP_ERROR_NULL on error.
  */
-int arp_init() {
+netdevice_t *arp_init() {
 	// Return if default device has been setted
 	if (default_device != NULL) {
 		fprintf(stderr,
 				ERR_COLOR "%s:%d in %s(): default_device has been set, this function should only "
 						  "be called once.\n" NONE,
 				__FILE__, __LINE__, __func__);
-		return ARP_ERROR;
+		return ARP_ERROR_NULL;
 	}
 
 	char dev_name[64];	 // Device name buffer
 	if (netdevice_getdevice(0, dev_name) == NETDEVICE_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_getdevice() error\n" NONE, __FILE__,
 				__LINE__, __func__);
-		return ARP_ERROR;
+		return ARP_ERROR_NULL;
 	}
 
 	char errbuf[PCAP_ERRBUF_SIZE];	 // Error buf
-	if ((default_device = netdevice_open(dev_name, errbuf)) == NETDEVICE_ERROR) {
+	if ((default_device = netdevice_open(dev_name, errbuf)) == NETDEVICE_ERROR_NULL) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_open() error\n" NONE, __FILE__,
 				__LINE__, __func__);
 		netdevice_close(default_device);
-		return ARP_ERROR;
+		return ARP_ERROR_NULL;
 	}
 
 	if (netdevice_add_protocol(default_device, ETH_ARP, arp_main) != 0) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_add_protocol() error\n" NONE, __FILE__,
 				__LINE__, __func__);
-		return ARP_ERROR;
+		return ARP_ERROR_NULL;
 	}
 
-	return 0;
+	return default_device;
 }
 
 /**
@@ -218,18 +218,32 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
 /**
  * Interface for upper layer to send packet
  * to specific IP address
- * @param device Interface to send
+ * @param device Interface to send, set NULL
+ * to send by default_device
  * @param dst_ip_addr Destination IP address
  * @param eth_type Ethertype
  * @param payload Payload
  * @param payload_len Length of payload
  * @return 0 on success,
- * ARP_ERROR on xmit error,
+ * ARP_ERROR on haven't init or xmit error,
  * ARP_UNKNOWN_MAC on unknow destination
  * MAC address
  */
 int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
 			 u_int payload_len) {
+	if (default_device == NULL) {
+		fprintf(
+			stderr,
+			ERR_COLOR
+			"%s:%d in %s(): default_device hasn't been initialized, arp_init shoud be call.\n" NONE,
+			__FILE__, __LINE__, __func__);
+		return ARP_ERROR;
+	}
+
+	if (device == NULL) {
+		device = default_device;
+	}
+
 	eth_hdr_t eth_hdr;	 // Ethernet header
 
 	if (arp_look_up(dst_ip_addr) != NULL) {
