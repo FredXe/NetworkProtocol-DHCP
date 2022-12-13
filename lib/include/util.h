@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include "ip.h"
 #include "netdevice.h"
 #include "types.h"
 
@@ -49,9 +50,10 @@
 /*================
  * Public Methods
  *================*/
-extern const byte *get_my_ip(netdevice_t *device);
+extern const byte *get_my_ip(const netdevice_t *device);
+extern const int get_my_ip_info(ipv4_info_t *info);
 extern const byte *string_to_ip_addr(const char *ip_addr_str);
-extern const char *ip_addr_to_string(byte *ip_addr, char *buf);
+extern const char *ip_addr_to_string(const byte *ip_addr, char *buf);
 extern const byte *string_to_eth_addr(const char *eth_addr_str);
 extern const char *eth_addr_to_string(const byte *eth_addr, char *buf);
 extern void print_data(const byte *data, const u_int data_len);

@@ -5,8 +5,16 @@
 
 #include "ip.h"
 
-const byte *get_my_ip(netdevice_t *device) {
+const byte *get_my_ip(const netdevice_t *device) {
 	return string_to_ip_addr("192.168.1.116");
+}
+
+const int get_my_ip_info(ipv4_info_t *info) {
+	IP_COPY(info->my_ip_addr, get_my_ip(NULL));
+	IP_COPY(info->gateway_d, string_to_ip_addr("192.168.1.1"));
+	IP_COPY(info->dns_server, string_to_ip_addr("192.168.1.10"));
+	info->subnet_mask = 24;
+	return 0;
 }
 
 /**
@@ -37,7 +45,7 @@ const byte *string_to_ip_addr(const char *ip_addr_str) {
  * @param buf String buffer to be use
  * @return ip_addr in *.*.*.* format string
  */
-const char *ip_addr_to_string(byte *ip_addr, char *buf) {
+const char *ip_addr_to_string(const byte *ip_addr, char *buf) {
 	static char ip_buf[16];
 	if (buf == NULL)
 		buf = ip_buf;

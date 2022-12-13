@@ -79,7 +79,7 @@ netdevice_t *arp_init() {
  * @param dst_ip_addr Destination IP address we're requesting
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_request(netdevice_t *device, byte *dst_ip_a) {
+int arp_request(const netdevice_t *device, const byte *dst_ip_a) {
 	eth_hdr_t eth_hdr;	 // Ethernet header for ARP request
 
 	// Build up Ethernet header
@@ -129,7 +129,7 @@ err_out:
  * @param dst_ip_addr Destination IP address we're replying
  * @return 0 on success, ARP_ERROR on error
  */
-int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr) {
+int arp_reply(const netdevice_t *device, const byte *dst_eth_addr, const byte *dst_ip_addr) {
 	eth_hdr_t eth_hdr;	 // Ethernet header
 
 	// Build up Ethernet header
@@ -231,8 +231,8 @@ void arp_main(netdevice_t *device, const byte *packet, u_int length) {
  * ARP_UNKNOWN_MAC on unknow destination
  * MAC address
  */
-int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
-			 u_int payload_len) {
+int arp_send(netdevice_t *device, const byte *dst_ip_addr, const two_bytes eth_type,
+			 const byte *payload, const u_int payload_len) {
 	if (default_device == NULL) {
 		fprintf(
 			stderr,

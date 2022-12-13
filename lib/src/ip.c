@@ -5,6 +5,8 @@
 
 static ip_protocol_t *ip_proto_list = NULL;
 
+static ipv4_info_t ipv4_info;	// IPv4 information
+
 static two_bytes ip_checksum(const ipv4_hdr_t header_in);
 
 /**
@@ -17,6 +19,9 @@ netdevice_t *ip_init() {
 	// Initialize ARP and get device
 	netdevice_t *device = arp_init();
 
+	// Get my IPv4 information
+	get_my_ip_info(&ipv4_info);
+
 	// Regist IPv4 to netdevice protocol list
 	if (netdevice_add_protocol(device, ETH_IPV4, ip_main) != 0) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): netdevice_add_protocol() error\n" NONE, __FILE__,
@@ -25,6 +30,10 @@ netdevice_t *ip_init() {
 	}
 
 	return device;
+}
+
+int is_my_subnet(const byte *ip) {
+	return (GET_IP(ip) == GET_IP(ipv4_info.subnet));
 }
 
 /**
@@ -64,6 +73,22 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
 	return header;
 }
 
+int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len) {
+
+	byte payload[MTU];
+	byte hdr_len = HLEN(ip_hdr);
+	memcpy(payload, ip_hdr, hdr_len);
+	memcpy(payload + hdr_len, data, data_len);
+
+	// Send to default gateway if destination IP is not in the same subnet
+	const byte *arp_dst_ip = is_my_subnet(ip_hdr->dst_ip) ? ip_hdr->dst_ip : ipv4_info.gateway_d;
+	int payload_len = hdr_len + data_len;
+
+	arp_send(NULL, arp_dst_ip, ETH_IPV4, payload, payload_len);
+
+	return 0;
+}
+
 /**
  * IPv4 capture handle while received packet,
  * than pass it to upper layer by callback
@@ -72,8 +97,8 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
  * @param packet Ethernet payload
  * @param length Length of packet
  */
-void ip_main(netdevice_t *device, const byte *packet, u_int length) {
-	if (length < (IP_MIN_HLEN * 4)) {
+void ip_main(netdevice_t *device, const byte *packet, const u_int packet_len) {
+	if (packet_len < (IP_MIN_HLEN * 4)) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): IPv4 packet only have header\n" NONE, __FILE__,
 				__LINE__, __func__);
 		return;
@@ -81,9 +106,9 @@ void ip_main(netdevice_t *device, const byte *packet, u_int length) {
 
 	ipv4_hdr_t *header = (ipv4_hdr_t *)packet;
 
-	int data_len = length - sizeof(ipv4_hdr_t);	  // Length of data
-	byte *data;
-	data = packet + sizeof(ipv4_hdr_t);	  // Data of packet
+	int data_len = packet_len - sizeof(ipv4_hdr_t);	  // Length of data
+	byte data[MTU];									  // Data of packet
+	memcpy(data, packet + sizeof(ipv4_hdr_t), packet_len);
 
 #if (DEBUG_IP == 1)
 	char src[IP_BUF_LEN], dst[IP_BUF_LEN];

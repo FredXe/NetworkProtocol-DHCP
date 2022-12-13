@@ -34,11 +34,11 @@ typedef struct {
  * Public Methods
  *================*/
 extern netdevice_t *arp_init();
-extern int arp_request(netdevice_t *device, byte *dst_ip_addr);
-extern int arp_reply(netdevice_t *device, byte *dst_eth_addr, byte *dst_ip_addr);
-extern void arp_main(netdevice_t *device, const byte *packet, u_int length);
-extern int arp_send(netdevice_t *device, byte *dst_ip_addr, two_bytes eth_type, byte *payload,
-					u_int payload_len);
+extern int arp_request(const netdevice_t *device, const byte *dst_ip_addr);
+extern int arp_reply(const netdevice_t *device, const byte *dst_eth_addr, const byte *dst_ip_addr);
+extern void arp_main(netdevice_t *device, const byte *packet, const u_int length);
+extern int arp_send(netdevice_t *device, const byte *dst_ip_addr, const two_bytes eth_type,
+					const byte *payload, const u_int payload_len);
 extern void arp_resend(netdevice_t *device);
 
 #endif
