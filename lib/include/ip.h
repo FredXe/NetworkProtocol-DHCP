@@ -33,11 +33,13 @@ typedef struct {
 } ipv4_info_t;						// IPv4 information struct
 
 typedef struct ip_protocol ip_protocol_t;
+#define PROTO_NAME_LEN 32
 
 struct ip_protocol {
-	byte protocol;		   // IP protocol number
-	ip_handler callback;   // Callback function of upper layer
-	ip_protocol_t *next;   // Next element
+	byte protocol;				 // IP protocol number
+	ip_handler callback;		 // Callback function of upper layer
+	char name[PROTO_NAME_LEN];	 // Name of the protocol
+	ip_protocol_t *next;		 // Next element
 };
 
 /*=================
@@ -82,8 +84,9 @@ extern netdevice_t *ip_init();
 extern const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byte *dst_ip,
 									 const u_int data_len);
 extern int is_my_subnet(const byte *ip);
+extern const char *ip_proto_to_string(const byte protocol, char *buf);
 extern int ip_chk_proto_list(const byte protocol);
-extern int ip_add_protocol(const byte protocol, const ip_handler callback);
+extern int ip_add_protocol(const byte protocol, const ip_handler callback, const char *name);
 extern int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len);
 extern void ip_main(netdevice_t *device, const byte *packet, const u_int length);
 extern void ip_close();

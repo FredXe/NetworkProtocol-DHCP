@@ -328,7 +328,7 @@ void arp_table_add(byte *ip_addr, byte *mac_addr) {
 	char ip_buf[IP_BUF_LEN], mac_buf[MAC_BUF_LEN];
 
 	printf(ARP_2_DEBUG_COLOR "ARP cached #%d" NONE ": " IP_DEBUG_COLOR "%s" NONE
-							 " - " IP_DEBUG_COLOR "%s" NONE "\n",
+							 " - " ETH_DEBUG_COLOR "%s" NONE "\n",
 		   arp_table_n, ip_addr_to_string(ip_addr, ip_buf), eth_addr_to_string(mac_addr, mac_buf));
 #endif
 }

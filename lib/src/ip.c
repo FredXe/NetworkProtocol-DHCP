@@ -32,6 +32,30 @@ netdevice_t *ip_init() {
 	return device;
 }
 
+/**
+ * Search IP protocol list and return the
+ * specific protocol name
+ * @param protocol IP protocol number to search
+ * @param buf Protocol name buf, set NULL to
+ * use default static buf
+ * @return Protocol name,
+ * "Unknown" if protocol not found
+ */
+const char *ip_proto_to_string(const byte protocol, char *buf) {
+	ip_protocol_t *ip_it = ip_proto_list;
+	static char proto_buf[PROTO_NAME_LEN];
+	if (buf == NULL)
+		buf = proto_buf;
+	while (ip_it != NULL) {
+		if (ip_it->protocol == protocol) {
+			strcpy(buf, ip_it->name);
+			return buf;
+		}
+		ip_it = ip_it->next;
+	}
+	return "Unknown";
+}
+
 int is_my_subnet(const byte *ip) {
 	return (GET_IP(ip) == GET_IP(ipv4_info.subnet));
 }
@@ -73,9 +97,19 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
 	return header;
 }
 
+/**
+ * API for upper layer to send packet through IPv4
+ * @param ip_hdr IPv4 header
+ * @param data Data from upper layer
+ * @param data_len Length of data
+ * @return 0 on success,
+ * IP_ERROR if failed arp_send()
+ */
 int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len) {
-	byte payload[MTU];
-	int hdr_len = HLEN(ip_hdr) * 4;
+	byte payload[MTU];				  // Payload to send
+	int hdr_len = HLEN(ip_hdr) * 4;	  // Length of header
+
+	// Build the payload
 	memcpy(payload, ip_hdr, hdr_len);
 	memcpy(payload + hdr_len, data, data_len);
 
@@ -83,7 +117,20 @@ int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len) {
 	const byte *arp_dst_ip = is_my_subnet(ip_hdr->dst_ip) ? ip_hdr->dst_ip : ipv4_info.gateway_d;
 	int payload_len = hdr_len + data_len;
 
-	arp_send(NULL, arp_dst_ip, ETH_IPV4, payload, payload_len);
+#if (DEBUG_IP_SEND == 1)
+	char dst[IP_BUF_LEN];
+	printf(IP_2_DEBUG_COLOR "IP send" NONE " to " IP_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR
+							"proto=%s len=%d" NONE ") \n",
+		   ip_addr_to_string(ip_hdr->dst_ip, dst), ip_proto_to_string(ip_hdr->protocol, NULL),
+		   payload_len);
+#endif
+
+	// Send by calling arp_send(), return IP_ERROR if failed
+	if (arp_send(NULL, arp_dst_ip, ETH_IPV4, payload, payload_len) == ARP_ERROR) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): arp_send(): error\n" NONE, __FILE__, __LINE__,
+				__func__);
+		return IP_ERROR;
+	}
 
 	return 0;
 }
@@ -109,7 +156,7 @@ void ip_main(netdevice_t *device, const byte *packet, const u_int packet_len) {
 	byte data[MTU];									  // Data of packet
 	memcpy(data, packet + sizeof(ipv4_hdr_t), packet_len);
 
-#if (DEBUG_IP == 1)
+#if (DEBUG_IP_RECEIVED == 1)
 	char src[IP_BUF_LEN], dst[IP_BUF_LEN];
 	printf(IP_2_DEBUG_COLOR "IP received" NONE ": " IP_DEBUG_COLOR "%s" NONE " => " IP_DEBUG_COLOR
 							"%s\n" NONE,
@@ -155,7 +202,7 @@ int ip_chk_proto_list(const byte protocol) {
  * @return 0 on success,
  * IP_ERROR if failed
  */
-int ip_add_protocol(const byte protocol, const ip_handler callback) {
+int ip_add_protocol(const byte protocol, const ip_handler callback, const char *name) {
 	if (ip_chk_proto_list(protocol) == 1) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): protocol is inside the list\n" NONE, __FILE__,
 				__LINE__, __func__);
@@ -168,6 +215,7 @@ int ip_add_protocol(const byte protocol, const ip_handler callback) {
 	// Set the protocol
 	new_proto->protocol = protocol;
 	new_proto->callback = callback;
+	strcpy(new_proto->name, name);
 
 	// Insert it into the list head
 	new_proto->next = ip_proto_list;

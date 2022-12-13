@@ -49,15 +49,16 @@ int main() {
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	netdevice_t *device = ip_init();
-	ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
+	// ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
 
 	byte ip[IP_ADDR_LEN];
 	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
-	ipv4_hdr_t ip_header = ip_hdr_maker(0x01, get_my_ip(device), ip, 100);
+	ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
 	byte data[100] = "FREDDY";
 	// netdevice_add_protocol(device, ETH_IPV4, callback_test);
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_IPV4));
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_ARP));
+	udp_init();
 	ip_send(&ip_header, data, 100);
 	// arp_send(NULL, ip, ETH_IPV4, (byte *)&ip_header, 20);
 	while (netdevice_rx(device) >= 0)
