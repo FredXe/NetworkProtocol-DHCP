@@ -74,9 +74,8 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
 }
 
 int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len) {
-
 	byte payload[MTU];
-	byte hdr_len = HLEN(ip_hdr);
+	int hdr_len = HLEN(ip_hdr) * 4;
 	memcpy(payload, ip_hdr, hdr_len);
 	memcpy(payload + hdr_len, data, data_len);
 
