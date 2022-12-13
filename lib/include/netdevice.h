@@ -58,7 +58,7 @@ extern int netdevice_chk_proto_list(const netdevice_t *device, const two_bytes e
 extern int netdevice_getdevice(const int dev_sel_no, char *dev_name);
 extern netdevice_t *netdevice_open(char *device_name, char *errbuf);
 extern int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
-								  netdevice_handler callback);
+								  const netdevice_handler callback);
 extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, const byte *payload,
 						  const u_int payload_len);
 extern int netdevice_rx(netdevice_t *netdevice);

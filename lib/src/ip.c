@@ -156,7 +156,7 @@ int ip_chk_proto_list(const byte protocol) {
  * @return 0 on success,
  * IP_ERROR if failed
  */
-int ip_add_protocol(const byte protocol, ip_handler callback) {
+int ip_add_protocol(const byte protocol, const ip_handler callback) {
 	if (ip_chk_proto_list(protocol) == 1) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): protocol is inside the list\n" NONE, __FILE__,
 				__LINE__, __func__);

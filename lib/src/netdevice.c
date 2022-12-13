@@ -231,7 +231,7 @@ err_out:
  * protocol has been inside the list.
  */
 int netdevice_add_protocol(netdevice_t *netdevice, const two_bytes eth_type,
-						   netdevice_handler callback) {
+						   const netdevice_handler callback) {
 	if (netdevice_chk_proto_list(netdevice, eth_type) == 1) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): protocol is inside the list\n" NONE, __FILE__,
 				__LINE__, __func__);
