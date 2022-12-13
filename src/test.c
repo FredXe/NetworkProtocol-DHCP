@@ -48,13 +48,13 @@ int main() {
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	// arp_request(device, ip);
-	netdevice_t *device = ip_init();
+	netdevice_t *device = udp_init();
 	// ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
 
 	byte ip[IP_ADDR_LEN];
 	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
 	// memcpy(ip, string_to_ip_addr("8.8.8.8"), IP_ADDR_LEN);
-	ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
+	// ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
 	byte data[181] = "\xe1\x15\xe1\x15\x00\x34\xbd\x13"
 					 "\x53\x70\x6f\x74\x55\x64\x70\x30\xb5\x94\x7e\x98\x7e\x68\xf4\xe3"
 					 "\x00\x01\x00\x04\x48\x95\xc2\x03\x0c\xbe\x5c\x28\x70\x78\xa0\x45"
@@ -63,7 +63,6 @@ int main() {
 	// netdevice_add_protocol(device, ETH_IPV4, callback_test);
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_IPV4));
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_ARP));
-	udp_init();
 	byte src[IP_ADDR_LEN], dst[IP_ADDR_LEN];
 	IP_COPY(src, string_to_ip_addr("192.168.1.102"));
 	IP_COPY(dst, string_to_ip_addr("192.168.1.255"));

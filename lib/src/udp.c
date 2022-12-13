@@ -53,7 +53,22 @@ void test_udp_callback(const byte *data, const u_int length) {
 	// print_data(data, length);
 }
 
+/**
+ * Initialize the UDP's resources and
+ * regist UDP to lower layer (aka IP)
+ * @return netdevice_t* Interface
+ * UDP_ERROR_NULL if ip_init() error
+ */
 netdevice_t *udp_init() {
+	netdevice_t *device;
+
+	if ((device = ip_init()) == IP_ERROR_NULL) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): ip_init() error\n" NONE, __FILE__, __LINE__,
+				__func__);
+		return UDP_ERROR_NULL;
+	}
+
 	ip_add_protocol(IP_PROTO_UDP, test_udp_callback, "UDP");
-	return NULL;
+
+	return device;
 }

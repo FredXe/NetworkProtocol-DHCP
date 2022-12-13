@@ -6,6 +6,9 @@
 
 #define IP_PROTO_UDP 0x11	// IP protocol number of UDP
 
+#define UDP_ERROR	   -1	  // UDP common error
+#define UDP_ERROR_NULL NULL	  // UDP common error with NULL
+
 /*=================
  * Protocol Format
  *=================*/
