@@ -77,5 +77,6 @@ extern int ip_chk_proto_list(const byte protocol);
 extern int ip_add_protocol(const byte protocol, ip_handler callback);
 extern int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len);
 extern void ip_main(netdevice_t *device, const byte *packet, u_int length);
+extern void ip_close();
 
 #endif

@@ -153,6 +153,28 @@ int ip_add_protocol(const byte protocol, ip_handler callback) {
 }
 
 /**
+ * Free the resources of IP protocol list
+ */
+void ip_close() {
+	// Iterator of IP protocol list
+	ip_protocol_t *ip_it = ip_proto_list;
+	// Pointer that will free
+	ip_protocol_t *ip_free = ip_it;
+
+	// Go through the list and free the elements
+	while (ip_it != NULL) {
+		ip_it = ip_it->next;
+		free(ip_free);
+		ip_free = ip_it;
+	}
+
+	// Set IP protocol list to NULL
+	ip_proto_list = NULL;
+
+	return;
+}
+
+/**
  * Checksum for IPv4 header
  * @param header_in Header to checksum
  * @return Checksum result
