@@ -56,8 +56,15 @@ const char *ip_proto_to_string(const byte protocol, char *buf) {
 	return "Unknown";
 }
 
+/**
+ * Check if the IP address is in the same subnet
+ * @param ip IP address to check
+ * @return 1 if yes, 0 if no
+ */
 int is_my_subnet(const byte *ip) {
-	return (GET_IP(ip) == GET_IP(ipv4_info.subnet));
+	ip_addr_t ip_in = GET_IP(ip);
+	ip_addr_t subnet = GET_IP(ipv4_info.subnet);
+	return ((ip_in & subnet) == subnet);
 }
 
 /**

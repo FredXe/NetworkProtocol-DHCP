@@ -53,6 +53,7 @@ int main() {
 
 	byte ip[IP_ADDR_LEN];
 	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
+	// memcpy(ip, string_to_ip_addr("8.8.8.8"), IP_ADDR_LEN);
 	ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
 	byte data[100] = "FREDDY";
 	// netdevice_add_protocol(device, ETH_IPV4, callback_test);

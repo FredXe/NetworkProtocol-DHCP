@@ -13,6 +13,7 @@ const int get_my_ip_info(ipv4_info_t *info) {
 	IP_COPY(info->my_ip_addr, get_my_ip(NULL));
 	IP_COPY(info->gateway_d, string_to_ip_addr("192.168.1.1"));
 	IP_COPY(info->dns_server, string_to_ip_addr("192.168.1.10"));
+	IP_COPY(info->subnet, string_to_ip_addr("192.168.1.0"));
 	info->subnet_mask = 24;
 	return 0;
 }
