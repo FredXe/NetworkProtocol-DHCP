@@ -187,6 +187,24 @@ int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *data, u
 	memcpy(buf, &udp_hdr, sizeof(udp_hdr_t));
 	memcpy(buf + sizeof(udp_hdr_t), data, data_len);
 
+#if (DEBUG_UDP_SEND == 1)
+	char src_buf[IP_BUF_LEN], dst_buf[IP_BUF_LEN];
+	const udp_protocol_t *protocol;
+	char service_name[SERVICE_NAME_LEN];
+
+	if ((protocol = udp_search_proto(udp_hdr.dst_port)) != NULL)
+		strcpy(service_name, protocol->service_name);
+	else
+		strcpy(service_name, "Unknown");
+
+	printf(UDP_2_DEBUG_COLOR
+		   "UDP Send  " NONE "(" UDP_DEBUG_COLOR "proto=%s len=%d" NONE ")\n"
+		   "\tFrom " IP_DEBUG_COLOR "%-16s" NONE ":" UDP_DEBUG_COLOR "%d" NONE "\n"
+		   "\tTo   " IP_DEBUG_COLOR "%-16s" NONE ":" UDP_DEBUG_COLOR "%d" NONE "\n",
+		   service_name, swap16(udp_hdr.length), ip_addr_to_string(src_ip, src_buf),
+		   swap16(udp_hdr.src_port), ip_addr_to_string(dst_ip, dst_buf), swap16(udp_hdr.dst_port));
+#endif
+
 	// Send out, return UDP_ERROR if failed
 	if (ip_send(ip_header, buf, udp_dtgrm_len) == IP_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): ip_send() error\n" NONE, __FILE__, __LINE__,
