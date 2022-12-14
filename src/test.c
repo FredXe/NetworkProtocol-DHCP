@@ -56,10 +56,8 @@ int main() {
 	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
 	// memcpy(ip, string_to_ip_addr("8.8.8.8"), IP_ADDR_LEN);
 	// ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
-	byte data[181] = "\xe1\x15\xe1\x15\x00\x34\xbd\x13"
-					 "\x53\x70\x6f\x74\x55\x64\x70\x30\xb5\x94\x7e\x98\x7e\x68\xf4\xe3"
-					 "\x00\x01\x00\x04\x48\x95\xc2\x03\x0c\xbe\x5c\x28\x70\x78\xa0\x45"
-					 "\x5e\x49\x2f\xa4\x4d\xde\x49\x1d\xc9\x4b\x59\x26";
+	byte data[100] = "FREDDY :D:D:D";
+	dhcp_send(data, 100);
 	// netdevice_add_protocol(device, ETH_IPV4, callback_test);
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_IPV4));
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_ARP));

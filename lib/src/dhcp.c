@@ -17,6 +17,17 @@ netdevice_t *dhcp_init() {
 	return device;
 }
 
+int dhcp_send(const byte *data, u_int data_len) {
+	byte ip[4];
+	IP_COPY(ip, string_to_ip_addr("192.168.1.10"));
+	udp_pseudo_hdr_t pseudo_hdr =
+		udp_pseudo_hdr_maker(get_my_ip(NULL), ip, swap16(data_len + sizeof(udp_hdr_t)));
+	udp_hdr_t udp_hdr =
+		udp_hdr_maker(swap16(8888), swap16(8888), swap16(data_len + sizeof(udp_hdr_t)));
+	udp_send(pseudo_hdr, udp_hdr, data, data_len);
+	return 0;
+}
+
 void dhcp_main(const byte *dhcp_msg, u_int msg_len) {
 	printf(":D================\n");
 }

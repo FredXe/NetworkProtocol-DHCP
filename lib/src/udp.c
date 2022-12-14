@@ -8,24 +8,38 @@ static udp_protocol_t *udp_proto_list = NULL;
 /**
  * UDP check sum method defined in RFC 768
  * @param pseudo_hdr A pseudo header to checksum
- * @param udp_data UDP data (header + datagram)
+ * @param udp_hdr UDP header
+ * @param udp_data UDP data
  * @return Checksum result
  */
-two_bytes udp_checksum(udp_pseudo_hdr_t pseudo_hdr, const byte *udp_data) {
+two_bytes udp_checksum(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *udp_data) {
 	// Length of UDP datagram
-	int udp_dtgrm_len = swap16(((udp_hdr_t *)udp_data)->length);
+	int udp_dtgrm_len = swap16(udp_hdr.length);
 	int checksum_len = sizeof(udp_pseudo_hdr_t) + udp_dtgrm_len;
+
+	// Set the old checksum into 0
+	udp_hdr.checksum = 0;
 
 	// Checksum data buffer
 	byte buf[checksum_len];
 
+	/**
+	 * Fill up the buf with those two header
+	 * and UDP data
+	 */
+	// Fill the pseudo header
 	memcpy(buf, &pseudo_hdr, sizeof(udp_pseudo_hdr_t));
-	memcpy(buf + sizeof(udp_pseudo_hdr_t), udp_data, udp_dtgrm_len);
 
-	// UDP header ptr point to UDP header in buf
-	udp_hdr_t *udp_hdr = (udp_hdr_t *)(buf + sizeof(udp_pseudo_hdr_t));
-	// Set the checksum into 0
-	udp_hdr->checksum = 0;
+	// Buffer pointer's offset
+	int offset = sizeof(udp_pseudo_hdr_t);
+	// Fill the UDP header
+	memcpy(buf + offset, &udp_hdr, sizeof(udp_hdr_t));
+
+	offset += sizeof(udp_hdr_t);
+	// Length of UDP data
+	int udp_data_len = udp_dtgrm_len - sizeof(udp_hdr_t);
+	// Fill the UDP data
+	memcpy(buf + offset, udp_data, udp_data_len);
 
 	// Checksum and return it
 	return checksum(buf, checksum_len);
@@ -50,6 +64,30 @@ udp_pseudo_hdr_t udp_pseudo_hdr_maker(const byte *src_ip, const byte *dst_ip, tw
 	pseudo_hdr.udp_len = udp_len;
 
 	return pseudo_hdr;
+}
+
+/**
+ * Build a UDP header with specify parameter.
+ * NOTE that all of the parameters is in
+ * Big Endian!!
+ * @param src_port Source port in Big Endian
+ * (Network transmit type)
+ * @param dst_port Destination port in Big Endian
+ * (Network transmit type)
+ * @param length Total length in Big Endian
+ * (Network transmit type)
+ * @return UDP header
+ */
+udp_hdr_t udp_hdr_maker(two_bytes src_port, two_bytes dst_port, two_bytes length) {
+	udp_hdr_t header;	// UDP header that returns
+
+	// Fill up the elements
+	header.src_port = src_port;
+	header.dst_port = dst_port;
+	header.length = length;
+	header.checksum = 0;
+
+	return header;
 }
 
 /**
@@ -110,6 +148,51 @@ int udp_add_protocol(two_bytes port, const udp_handler callback, const char *ser
 							 "\n",
 		   swap16(port), service_name);
 #endif
+
+	return 0;
+}
+
+/**
+ * API for upper layer to send packet through UDP
+ * @param pseudo_hdr UDP pseudo header
+ * @param udp_hdr UDP header
+ * @param data Data to send
+ * @param data_len Length of data
+ * @return 0 on success,
+ * UDP_ERROR if ip_send() failed
+ */
+int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *data, u_int data_len) {
+	// Total length of UDP datagram
+	u_int udp_dtgrm_len = data_len + sizeof(udp_hdr_t);
+
+	/**
+	 *  Build the IPv4 header
+	 */
+	// Pointer of source and destination IP address
+	byte *src_ip = pseudo_hdr.src_ip;
+	byte *dst_ip = pseudo_hdr.dst_ip;
+	// IPv4 header to send
+	ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, src_ip, dst_ip, udp_dtgrm_len);
+
+	/**
+	 * Build the UDP datagram
+	 */
+	// Compute the checksum
+	udp_hdr.checksum = udp_checksum(pseudo_hdr, udp_hdr, data);
+
+	// Data buffer to send to IP
+	byte buf[udp_dtgrm_len];
+
+	// Fill up the buffer
+	memcpy(buf, &udp_hdr, sizeof(udp_hdr_t));
+	memcpy(buf + sizeof(udp_hdr_t), data, data_len);
+
+	// Send out, return UDP_ERROR if failed
+	if (ip_send(ip_header, buf, udp_dtgrm_len) == IP_ERROR) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): ip_send() error\n" NONE, __FILE__, __LINE__,
+				__func__);
+		return UDP_ERROR;
+	}
 
 	return 0;
 }

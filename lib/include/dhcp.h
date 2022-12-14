@@ -17,6 +17,7 @@
  * Public Methods
  *================*/
 extern netdevice_t *dhcp_init();
+extern int dhcp_send(const byte *data, u_int data_len);
 extern void dhcp_main(const byte *dhcp_msg, u_int msg_len);
 
 #endif
