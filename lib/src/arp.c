@@ -344,7 +344,7 @@ static const char *arp_op_to_string(two_bytes op) {
 	case ARP_OP_REQUEST:
 		return ARP_2_DEBUG_COLOR "Request" NONE;
 	case ARP_OP_REPLY:
-		return ARP_2_DEBUG_COLOR "Reply" NONE;
+		return ARP_2_DEBUG_COLOR "Reply  " NONE;
 	default:
 		return ERR_COLOR "Unknown" NONE;
 		break;
@@ -359,11 +359,12 @@ static const char *arp_op_to_string(two_bytes op) {
 static void arp_dump(arp_t *arp) {
 	char src_eth_str[ETH_BUF_LEN], src_ip_str[IP_BUF_LEN];
 	char dst_eth_str[ETH_BUF_LEN], dst_ip_str[IP_BUF_LEN];
-	printf(ARP_DEBUG_COLOR "ARP Eth=%04x/%d, IP=%04x/%d, Op=%04x" NONE "(%s)\n"
-						   "\tFrom " ETH_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR "%s" NONE ")\n"
-						   "\tTo   " ETH_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR "%s" NONE ")\n",
-		   swap16(arp->hdr_type), arp->hdr_addr_len, swap16(arp->proto_type), arp->ip_addr_len,
-		   swap16(arp->op), arp_op_to_string(arp->op),
+	printf(ARP_2_DEBUG_COLOR "ARP %s" ARP_DEBUG_COLOR " Eth=%04x/%d, IP=%04x/%d, Op=%04x\n" NONE
+							 "\tFrom " ETH_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR "%s" NONE ")\n"
+							 "\tTo   " ETH_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR "%s" NONE
+							 ")\n",
+		   arp_op_to_string(arp->op), swap16(arp->hdr_type), arp->hdr_addr_len,
+		   swap16(arp->proto_type), arp->ip_addr_len, swap16(arp->op),
 		   eth_addr_to_string(arp->src_eth_addr, src_eth_str),
 		   ip_addr_to_string(arp->src_ip_addr, src_ip_str),
 		   eth_addr_to_string(arp->dst_eth_addr, dst_eth_str),

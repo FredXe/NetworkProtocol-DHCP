@@ -3,7 +3,7 @@
 #include "arp.h"
 #include "util.h"
 
-static ip_protocol_t *ip_proto_list = NULL;
+static ip_protocol_t *ip_proto_list = NULL;	  // IP protocol list
 
 static ipv4_info_t ipv4_info;	// IPv4 information
 
@@ -206,6 +206,7 @@ int ip_chk_proto_list(const byte protocol) {
  * @param protocol IP protocol number
  * @param callback Callback function of
  * upper layer
+ * @param name Protocol name
  * @return 0 on success,
  * IP_ERROR if failed
  */

@@ -17,7 +17,7 @@
 #define IP_ERROR	  -1	 // IP common error
 #define IP_ERROR_NULL NULL	 // IP common error with NULL pointer
 
-typedef void (*ip_handler)(const byte *packet, const u_int length);
+typedef void (*ip_handler)(const byte *packet, u_int length);
 
 /**
  * Script for allocate an IP address

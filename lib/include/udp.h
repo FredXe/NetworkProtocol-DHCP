@@ -9,6 +9,8 @@
 #define UDP_ERROR	   -1	  // UDP common error
 #define UDP_ERROR_NULL NULL	  // UDP common error with NULL
 
+typedef void (*udp_handler)(const byte *data, u_int data_len);
+
 /*=================
  * Protocol Format
  *=================*/
@@ -27,13 +29,28 @@ typedef struct {
 	two_bytes udp_len;			// Length of UDP datagram
 } udp_pseudo_hdr_t;				// UDP pseudo header format
 
+#define SERVICE_NAME_LEN 64
+typedef struct udp_protocol udp_protocol_t;
+
+struct udp_protocol {
+	two_bytes port;						   // Port the service use
+	udp_handler callback;				   // Callback function of upper layer
+	char service_name[SERVICE_NAME_LEN];   // Service name
+	udp_protocol_t *next;				   // Next protocol
+};										   // Application layer protocol information
+
 /*================
  * Public Methods
  *================*/
 extern two_bytes udp_checksum(udp_pseudo_hdr_t pseudo_hdr, const byte *udp_data);
 extern udp_pseudo_hdr_t udp_pseudo_hdr_maker(const byte *src_ip, const byte *dst,
 											 two_bytes udp_len);
-extern void test_udp_callback(const byte *data, u_int length);
+extern udp_hdr_t udp_hdr_maker(u_int16_t src_port, u_int16_t dst_port, u_int16_t length);
+extern const udp_protocol_t *udp_search_proto(two_bytes port);
+extern int udp_add_protocol(two_bytes port, const udp_handler callback, const char *service_name);
+extern int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *datagram,
+					u_int dtgrm_len);
+extern void udp_main(const byte *udp_datagram, u_int datagram_len);
 extern netdevice_t *udp_init();
 
 #endif
