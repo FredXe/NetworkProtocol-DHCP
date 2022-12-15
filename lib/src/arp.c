@@ -27,7 +27,7 @@ static netdevice_t *default_device = NULL;
 
 // Definition of ARP private method
 static const byte *arp_look_up(const byte *ip_addr);
-static void arp_table_add(byte *ip_addr, byte *mac_addr);
+static void arp_table_add(const byte *ip_addr, const byte *mac_addr);
 
 #if (DEBUG_ARP == 1)
 static const char *arp_op_to_string(two_bytes op);
@@ -69,6 +69,8 @@ netdevice_t *arp_init() {
 				__LINE__, __func__);
 		return ARP_ERROR_NULL;
 	}
+
+	arp_table_add(string_to_ip_addr("255.255.255.255"), ETH_BROADCAST_ADDR);
 
 	return default_device;
 }
@@ -319,7 +321,7 @@ const byte *arp_look_up(const byte *ip_addr) {
  * @param ip_addr IP address
  * @param mac_addr MAC address
  */
-void arp_table_add(byte *ip_addr, byte *mac_addr) {
+void arp_table_add(const byte *ip_addr, const byte *mac_addr) {
 	arp_table_n = (arp_table_n + 1) % MAX_ARPIP_N;
 	memcpy(arp_table[arp_table_n].ip_addr, ip_addr, IP_ADDR_LEN);
 	memcpy(arp_table[arp_table_n].mac_addr, mac_addr, ETH_ADDR_LEN);

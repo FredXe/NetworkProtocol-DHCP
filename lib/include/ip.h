@@ -25,12 +25,14 @@ typedef void (*ip_handler)(const byte *packet, u_int length);
 #define IP_ALLOC(ip) byte *ip = (byte *)calloc(IP_ADDR_LEN, sizeof(byte))
 
 typedef struct {
-	byte my_ip_addr[IP_ADDR_LEN];	// My IP address
-	byte gateway_d[IP_ADDR_LEN];	// Default gateway
-	byte dns_server[IP_ADDR_LEN];	// DNS server
-	byte subnet[IP_ADDR_LEN];		// Subnet
-	u_int subnet_mask;				// Subnet mask e.g.:24
-} ipv4_info_t;						// IPv4 information struct
+	byte my_ip_addr[IP_ADDR_LEN];	 // My IP address
+	byte gateway_d[IP_ADDR_LEN];	 // Default gateway (router)
+	byte dns_server[IP_ADDR_LEN];	 // DNS server
+	byte subnet_mask[IP_ADDR_LEN];	 // Subnet mask
+	byte subnet[IP_ADDR_LEN];		 // Subnet
+} ipv4_info_t;						 // IPv4 information struct
+
+extern ipv4_info_t my_ipv4_info;   // IPv4 information
 
 typedef struct ip_protocol ip_protocol_t;
 #define PROTO_NAME_LEN 32

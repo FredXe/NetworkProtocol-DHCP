@@ -25,6 +25,8 @@ void callback_test(netdevice_t *netdevice, const byte *packet, unsigned int leng
 }
 
 int main() {
+	// long long int a = 0x3903F326;
+	// printf("%s\n", (char *)&a);
 	// byte *eth = string_to_eth_addr("20:7b:d2:19:e8:ff");
 	// byte *dst_eth = string_to_eth_addr("70:82:69:68:68:89");
 	// byte dst_eth[ETH_ADDR_LEN] = "FREDDY";
@@ -50,14 +52,15 @@ int main() {
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	netdevice_t *device = dhcp_init();
+	dhcp_discover();
 	// ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
 
 	byte ip[IP_ADDR_LEN];
 	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
 	// memcpy(ip, string_to_ip_addr("8.8.8.8"), IP_ADDR_LEN);
 	// ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
-	byte data[100] = "FREDDY :D:D:D";
-	dhcp_send(data, 100);
+	// byte data[100] = "FREDDY :D:D:D";
+	// dhcp_send(data, 100);
 	// netdevice_add_protocol(device, ETH_IPV4, callback_test);
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_IPV4));
 	// printf("%d\n", netdevice_chk_proto_list(device, ETH_ARP));

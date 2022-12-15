@@ -5,7 +5,7 @@
 
 static ip_protocol_t *ip_proto_list = NULL;	  // IP protocol list
 
-static ipv4_info_t ipv4_info;	// IPv4 information
+ipv4_info_t my_ipv4_info;
 
 static two_bytes ip_checksum(const ipv4_hdr_t header_in);
 
@@ -20,7 +20,7 @@ netdevice_t *ip_init() {
 	netdevice_t *device = arp_init();
 
 	// Get my IPv4 information
-	get_my_ip_info(&ipv4_info);
+	get_my_ip_info(&my_ipv4_info);
 
 	// Regist IPv4 to netdevice protocol list
 	if (netdevice_add_protocol(device, ETH_IPV4, ip_main) != 0) {
@@ -63,7 +63,7 @@ const char *ip_proto_to_string(const byte protocol, char *buf) {
  */
 int is_my_subnet(const byte *ip) {
 	ip_addr_t ip_in = GET_IP(ip);
-	ip_addr_t subnet = GET_IP(ipv4_info.subnet);
+	ip_addr_t subnet = GET_IP(my_ipv4_info.subnet);
 	return ((ip_in & subnet) == subnet);
 }
 
@@ -121,7 +121,7 @@ int ip_send(ipv4_hdr_t ip_hdr, const byte *data, const u_int data_len) {
 	memcpy(payload + hdr_len, data, data_len);
 
 	// Send to default gateway if destination IP is not in the same subnet
-	const byte *arp_dst_ip = is_my_subnet(ip_hdr.dst_ip) ? ip_hdr.dst_ip : ipv4_info.gateway_d;
+	const byte *arp_dst_ip = is_my_subnet(ip_hdr.dst_ip) ? ip_hdr.dst_ip : my_ipv4_info.gateway_d;
 	int payload_len = hdr_len + data_len;
 
 #if (DEBUG_IP_SEND == 1)
