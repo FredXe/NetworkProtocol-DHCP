@@ -3,7 +3,7 @@
 #include "arp.h"
 #include "util.h"
 
-static ip_protocol_t *ip_proto_list = NULL;
+static ip_protocol_t *ip_proto_list = NULL;	  // IP protocol list
 
 static ipv4_info_t ipv4_info;	// IPv4 information
 
@@ -112,23 +112,23 @@ const ipv4_hdr_t ip_hdr_maker(const byte protocol, const byte *src_ip, const byt
  * @return 0 on success,
  * IP_ERROR if failed arp_send()
  */
-int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len) {
-	byte payload[MTU];				  // Payload to send
-	int hdr_len = HLEN(ip_hdr) * 4;	  // Length of header
+int ip_send(ipv4_hdr_t ip_hdr, const byte *data, const u_int data_len) {
+	byte payload[MTU];				   // Payload to send
+	int hdr_len = HLEN(&ip_hdr) * 4;   // Length of header
 
 	// Build the payload
-	memcpy(payload, ip_hdr, hdr_len);
+	memcpy(payload, &ip_hdr, hdr_len);
 	memcpy(payload + hdr_len, data, data_len);
 
 	// Send to default gateway if destination IP is not in the same subnet
-	const byte *arp_dst_ip = is_my_subnet(ip_hdr->dst_ip) ? ip_hdr->dst_ip : ipv4_info.gateway_d;
+	const byte *arp_dst_ip = is_my_subnet(ip_hdr.dst_ip) ? ip_hdr.dst_ip : ipv4_info.gateway_d;
 	int payload_len = hdr_len + data_len;
 
 #if (DEBUG_IP_SEND == 1)
 	char dst[IP_BUF_LEN];
 	printf(IP_2_DEBUG_COLOR "IP send" NONE " to " IP_DEBUG_COLOR "%s" NONE " (" IP_DEBUG_COLOR
 							"proto=%s len=%d" NONE ") \n",
-		   ip_addr_to_string(ip_hdr->dst_ip, dst), ip_proto_to_string(ip_hdr->protocol, NULL),
+		   ip_addr_to_string(ip_hdr.dst_ip, dst), ip_proto_to_string(ip_hdr.protocol, NULL),
 		   payload_len);
 #endif
 
@@ -206,6 +206,7 @@ int ip_chk_proto_list(const byte protocol) {
  * @param protocol IP protocol number
  * @param callback Callback function of
  * upper layer
+ * @param name Protocol name
  * @return 0 on success,
  * IP_ERROR if failed
  */

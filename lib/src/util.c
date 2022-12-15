@@ -146,10 +146,10 @@ two_bytes swap16(two_bytes in) {
 two_bytes checksum(byte *data, u_int len) {
 	// Iterator of data
 	uint16_t *buf = (uint16_t *)data;
-	// Pick the upper bound of len/2 as the count down
-	int data_cnt = (len + 1) / 2;
+	// Count down of summation
+	int data_cnt = len / 2;
 	/**
-	 * The result, aka ummation of the data, is 2 bytes.
+	 * The result, aka summation of the data, is 2 bytes.
 	 * But we have to calculate the carry out to feed
 	 * back. So we have to use ad data type larger than
 	 * 2 bytes.
@@ -162,6 +162,9 @@ two_bytes checksum(byte *data, u_int len) {
 	 */
 	for (sum = 0; data_cnt > 0; data_cnt--) {
 		sum += swap16(*buf++);
+	}
+	if ((len & 0x1) != 0) {
+		sum += swap16(*((uint8_t *)buf));
 	}
 
 	/**

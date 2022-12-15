@@ -24,8 +24,8 @@
 #define LIGHT_CYAN	 "\033[1;36m"
 #define PURPLE		 "\033[0;35m"
 #define LIGHT_PURPLE "\033[1;35m"
-#define BROWN		 "\033[0;33m"
-#define YELLOW		 "\033[1;33m"
+#define YELLOW		 "\033[0;33m"
+#define LIGHT_YELLOW "\033[1;33m"
 #define LIGHT_GRAY	 "\033[0;37m"
 #define WHITE		 "\033[1;37m"
 
@@ -37,6 +37,12 @@
 
 #define IP_DEBUG_COLOR	 GREEN		   // Color for IP debug message
 #define IP_2_DEBUG_COLOR LIGHT_GREEN   // Secondary color for IP debug message
+
+#define UDP_DEBUG_COLOR	  PURPLE		 // Color for UDP debug message
+#define UDP_2_DEBUG_COLOR LIGHT_PURPLE	 // Secondary color for UDP debug message
+
+#define DHCP_DEBUG_COLOR   YELLOW		  // Color for DHCP debug message
+#define DHCP_2_DEBUG_COLOR LIGHT_YELLOW	  // Secondary color for DHCP debug message
 
 #define ERR_COLOR LIGHT_RED	  // Color for error message
 

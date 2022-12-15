@@ -17,7 +17,7 @@
 #define IP_ERROR	  -1	 // IP common error
 #define IP_ERROR_NULL NULL	 // IP common error with NULL pointer
 
-typedef void (*ip_handler)(const byte *packet, const u_int length);
+typedef void (*ip_handler)(const byte *packet, u_int length);
 
 /**
  * Script for allocate an IP address
@@ -87,7 +87,7 @@ extern int is_my_subnet(const byte *ip);
 extern const char *ip_proto_to_string(const byte protocol, char *buf);
 extern int ip_chk_proto_list(const byte protocol);
 extern int ip_add_protocol(const byte protocol, const ip_handler callback, const char *name);
-extern int ip_send(const ipv4_hdr_t *ip_hdr, const byte *data, const u_int data_len);
+extern int ip_send(ipv4_hdr_t ip_hdr, const byte *data, const u_int data_len);
 extern void ip_main(netdevice_t *device, const byte *packet, const u_int length);
 extern void ip_close();
 
