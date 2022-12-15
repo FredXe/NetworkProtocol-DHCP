@@ -53,9 +53,13 @@
 #define MAX(A, B) ((A > B) ? A : B)
 #define MIN(A, B) ((A < B) ? A : B)
 
+extern ipv4_info_t MY_IPV4_INFO;
+extern byte MY_MAC_ADDR[ETH_ADDR_LEN];
+
 /*================
  * Public Methods
  *================*/
+extern const byte *set_my_mac(const netdevice_t *device);
 extern const byte *get_my_ip(const netdevice_t *device);
 extern const int get_my_ip_info(ipv4_info_t *info);
 extern const byte *string_to_ip_addr(const char *ip_addr_str);

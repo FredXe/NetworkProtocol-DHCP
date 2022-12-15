@@ -107,7 +107,7 @@ void dhcp_discover() {
 	GET_IP(header.yiaddr) = 0;
 	GET_IP(header.siaddr) = 0;
 	GET_IP(header.giaddr) = 0;
-	memcpy(header.chaddr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+	memcpy(header.chaddr, MY_MAC_ADDR, ETH_ADDR_LEN);
 
 	memset(header.sname, 0, DHCP_SNAME_LEN);
 	memset(header.file, 0, DHCP_FILE_LEN);

@@ -5,6 +5,54 @@
 
 #include "ip.h"
 
+ipv4_info_t MY_IPV4_INFO;
+byte MY_MAC_ADDR[ETH_ADDR_LEN];
+
+/**
+ * Get the MAC address by looking up
+ * '/sys/class/net/(dev)/address'
+ * @param device Specify the interface
+ * @return Host MAC address on success,
+ * NETDEVICE_ERROR_NULL on error
+ */
+const byte *set_my_mac(const netdevice_t *device) {
+
+	char addr_file_name[256] = "/sys/class/net/";	// MAC address's file name on system
+
+	// Append device name to file name
+	strcat(addr_file_name, device->device_name);
+	strcat(addr_file_name, "/address");
+
+	char MAC_addr_str[18];	 // Buffer for the file reading
+
+	// Open the file with read mode
+	FILE *addr_file = fopen(addr_file_name, "r");
+
+	// Return NETDEVICE_ERROR_NULL is fopen() failed
+	if (addr_file == NULL) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): fopen(): error on open file\n" NONE, __FILE__,
+				__LINE__, __func__);
+		goto err_out;
+	}
+
+	// Read the file
+	if (fscanf(addr_file, "%s", MAC_addr_str) < 0) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): fscanf(): error on read file\n" NONE, __FILE__,
+				__LINE__, __func__);
+		goto err_out;
+	}
+	fclose(addr_file);
+
+	memcpy(MY_MAC_ADDR, string_to_eth_addr(MAC_addr_str), ETH_ADDR_LEN);
+
+	// Transfer string into byte array
+	return MY_MAC_ADDR;
+
+err_out:
+	fclose(addr_file);
+	return NETDEVICE_ERROR_NULL;
+}
+
 const byte *get_my_ip(const netdevice_t *device) {
 	return string_to_ip_addr("192.168.1.116");
 }
