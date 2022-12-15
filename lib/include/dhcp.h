@@ -3,6 +3,7 @@
 
 #include "ip.h"
 #include "netdevice.h"
+#include "udp.h"
 
 #define UDP_PORT_DHCP_S 0x4300	 // DHCP port on server
 #define UDP_PORT_DHCP_C 0x4400	 // DHCP port on client
@@ -47,7 +48,7 @@ typedef struct {
 extern netdevice_t *dhcp_init();
 extern void dhcp_discover();
 extern void dhcp_request();
-extern int dhcp_send(const byte *data, u_int data_len);
+extern int dhcp_send(byte msg_type, const byte *data, u_int data_len);
 extern void dhcp_main(const byte *dhcp_msg, u_int msg_len);
 
 #endif

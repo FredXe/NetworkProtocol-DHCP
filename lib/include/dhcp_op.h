@@ -13,39 +13,39 @@ typedef struct {
 } dhcp_op_t;
 
 typedef struct {
-	byte Pad;				   // 0
-	byte Subnet_Mask;		   // 1
-	byte Router;			   // 3
-	byte Domain_Name_Server;   // 6
-	byte Domain_Name;		   // 15
-	byte Address_Request;	   // 50
-	byte Address_Time;		   // 51
-	byte Message_Type;		   // 53
-	byte Server_Identifier;	   // 54
-	byte Parameter_List;	   // 55
-	byte End;				   // 255
+	const byte Pad;					 // 0
+	const byte Subnet_Mask;			 // 1
+	const byte Router;				 // 3
+	const byte Domain_Name_Server;	 // 6
+	const byte Domain_Name;			 // 15
+	const byte Address_Request;		 // 50
+	const byte Address_Time;		 // 51
+	const byte Message_Type;		 // 53
+	const byte Server_Identifier;	 // 54
+	const byte Parameter_List;		 // 55
+	const byte End;					 // 255
 } dhcp_op_code_t;
 extern const dhcp_op_code_t DHCP_OP;
 
 typedef struct {
-	byte DISCOVER;			 //  1
-	byte OFFER;				 //  2
-	byte REQUEST;			 //  3
-	byte DECLINE;			 //  4
-	byte ACK;				 //  5
-	byte NAK;				 //  6
-	byte RELEASE;			 //  7
-	byte INFORM;			 //  8
-	byte FORCERENEW;		 //  9
-	byte LEASEQUERY;		 //  10
-	byte LEASEUNASSIGNED;	 //  11
-	byte LEASEUNKNOWN;		 //  12
-	byte LEASEACTIVE;		 //  13
-	byte BULKLEASEQUERY;	 //  14
-	byte LEASEQUERYDONE;	 //  15
-	byte ACTIVELEASEQUERY;	 //  16
-	byte LEASEQUERYSTATUS;	 //  17
-	byte TLS;				 //  18
+	const byte DISCOVER;		   //  1
+	const byte OFFER;			   //  2
+	const byte REQUEST;			   //  3
+	const byte DECLINE;			   //  4
+	const byte ACK;				   //  5
+	const byte NAK;				   //  6
+	const byte RELEASE;			   //  7
+	const byte INFORM;			   //  8
+	const byte FORCERENEW;		   //  9
+	const byte LEASEQUERY;		   //  10
+	const byte LEASEUNASSIGNED;	   //  11
+	const byte LEASEUNKNOWN;	   //  12
+	const byte LEASEACTIVE;		   //  13
+	const byte BULKLEASEQUERY;	   //  14
+	const byte LEASEQUERYDONE;	   //  15
+	const byte ACTIVELEASEQUERY;   //  16
+	const byte LEASEQUERYSTATUS;   //  17
+	const byte TLS;				   //  18
 } dhcp_msg_t;
 extern const dhcp_msg_t DHCP_MSG;
 

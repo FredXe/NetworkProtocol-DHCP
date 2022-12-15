@@ -3,7 +3,6 @@
 #include <time.h>
 
 #include "dhcp_op.h"
-#include "udp.h"
 
 const byte DHCP_MAGIC_COOKIE[DHCP_MAGIC_LEN] = {0x63, 0x82, 0x53, 0x63};
 
@@ -129,25 +128,60 @@ void dhcp_discover() {
 	offset += 4;
 	// Fill in the Message type
 	offset += dhcp_op_filler(buf + offset, DHCP_OP.Message_Type, 1, &DHCP_MSG.DISCOVER);
+
 	// Fill in the End option
 	dhcp_op_filler(buf + offset, DHCP_OP.End, 1, NULL);
 
 	// Send out the DHCP discover
-	dhcp_send(buf, dhcp_discover_len);
+	dhcp_send(DHCP_MSG.DISCOVER, buf, dhcp_discover_len);
 
 	return;
 }
 
-int dhcp_send(const byte *data, u_int data_len) {
-	byte src_ip[4];
-	IP_COPY(src_ip, string_to_ip_addr("0.0.0.0"));
-	byte dst_ip[4];
-	IP_COPY(dst_ip, string_to_ip_addr("255.255.255.255"));
-	udp_pseudo_hdr_t pseudo_hdr =
-		udp_pseudo_hdr_maker(src_ip, dst_ip, swap16(data_len + sizeof(udp_hdr_t)));
-	udp_hdr_t udp_hdr =
-		udp_hdr_maker(UDP_PORT_DHCP_C, UDP_PORT_DHCP_S, swap16(data_len + sizeof(udp_hdr_t)));
-	udp_send(pseudo_hdr, udp_hdr, data, data_len);
+/**
+ * Send DHCP packet with specify DHCP message type
+ * @param msg_type Message type
+ * @param data DHCP packet
+ * @param data_len Length DHCP packet
+ * @return 0 on success,
+ * DHCP_ERROR if udp_send() error
+ */
+int dhcp_send(byte msg_type, const byte *data, u_int data_len) {
+	udp_param_t udp_param;	 // UDP parameter
+
+	/**
+	 * Fill in UDP parameters according
+	 * to different DHCP message type
+	 */
+	if (msg_type == DHCP_MSG.DISCOVER) {
+		IP_COPY(udp_param.src_ip, string_to_ip_addr("0.0.0.0"));
+		IP_COPY(udp_param.dst_ip, string_to_ip_addr("255.255.255.255"));
+		udp_param.src_port = UDP_PORT_DHCP_C;
+		udp_param.dst_port = UDP_PORT_DHCP_S;
+	} else if (msg_type == DHCP_MSG.OFFER) {
+		IP_COPY(udp_param.src_ip, MY_IPV4_INFO.my_ip_addr);
+		IP_COPY(udp_param.dst_ip, string_to_ip_addr("255.255.255.255"));
+		udp_param.src_port = UDP_PORT_DHCP_S;
+		udp_param.dst_port = UDP_PORT_DHCP_C;
+	} else if (msg_type == DHCP_MSG.REQUEST) {
+		IP_COPY(udp_param.src_ip, string_to_ip_addr("0.0.0.0"));
+		IP_COPY(udp_param.dst_ip, string_to_ip_addr("255.255.255.255"));
+		udp_param.src_port = UDP_PORT_DHCP_C;
+		udp_param.dst_port = UDP_PORT_DHCP_S;
+	} else if (msg_type == DHCP_MSG.ACK) {
+		IP_COPY(udp_param.src_ip, MY_IPV4_INFO.my_ip_addr);
+		// Should be client IP address!!
+		IP_COPY(udp_param.dst_ip, string_to_ip_addr("255.255.255.255"));
+		udp_param.src_port = UDP_PORT_DHCP_S;
+		udp_param.dst_port = UDP_PORT_DHCP_C;
+	}
+
+	if (udp_send(udp_param, data, data_len) == UDP_ERROR) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): udp_send() error\n" NONE, __FILE__, __LINE__,
+				__func__);
+		return DHCP_ERROR;
+	}
+
 	return 0;
 }
 

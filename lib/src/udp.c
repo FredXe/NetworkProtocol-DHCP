@@ -154,20 +154,24 @@ int udp_add_protocol(two_bytes port, const udp_handler callback, const char *ser
 
 /**
  * API for upper layer to send packet through UDP
- * @param pseudo_hdr UDP pseudo header
- * @param udp_hdr UDP header
+ * @param udp_param UDP parameters
  * @param data Data to send
  * @param data_len Length of data
  * @return 0 on success,
  * UDP_ERROR if ip_send() failed
  */
-int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *data, u_int data_len) {
+int udp_send(udp_param_t udp_param, const byte *data, u_int data_len) {
 	// Total length of UDP datagram
 	u_int udp_dtgrm_len = data_len + sizeof(udp_hdr_t);
+	udp_pseudo_hdr_t pseudo_hdr =
+		udp_pseudo_hdr_maker(udp_param.src_ip, udp_param.dst_ip, swap16(udp_dtgrm_len));
+	udp_hdr_t udp_hdr =
+		udp_hdr_maker(udp_param.src_port, udp_param.dst_port, swap16(udp_dtgrm_len));
 
 	/**
 	 *  Build the IPv4 header
 	 */
+
 	// Pointer of source and destination IP address
 	byte *src_ip = pseudo_hdr.src_ip;
 	byte *dst_ip = pseudo_hdr.dst_ip;
@@ -187,6 +191,13 @@ int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *data, u
 	memcpy(buf, &udp_hdr, sizeof(udp_hdr_t));
 	memcpy(buf + sizeof(udp_hdr_t), data, data_len);
 
+	// Send out, return UDP_ERROR if failed
+	if (ip_send(ip_header, buf, udp_dtgrm_len) == IP_ERROR) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): ip_send() error\n" NONE, __FILE__, __LINE__,
+				__func__);
+		return UDP_ERROR;
+	}
+
 #if (DEBUG_UDP_SEND == 1)
 	char src_buf[IP_BUF_LEN], dst_buf[IP_BUF_LEN];
 	const udp_protocol_t *protocol;
@@ -204,13 +215,6 @@ int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *data, u
 		   service_name, swap16(udp_hdr.length), ip_addr_to_string(src_ip, src_buf),
 		   swap16(udp_hdr.src_port), ip_addr_to_string(dst_ip, dst_buf), swap16(udp_hdr.dst_port));
 #endif
-
-	// Send out, return UDP_ERROR if failed
-	if (ip_send(ip_header, buf, udp_dtgrm_len) == IP_ERROR) {
-		fprintf(stderr, ERR_COLOR "%s:%d in %s(): ip_send() error\n" NONE, __FILE__, __LINE__,
-				__func__);
-		return UDP_ERROR;
-	}
 
 	return 0;
 }
