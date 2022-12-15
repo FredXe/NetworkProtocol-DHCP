@@ -47,7 +47,7 @@ typedef struct {
  *================*/
 extern netdevice_t *dhcp_init();
 extern void dhcp_discover();
-extern void dhcp_request();
+extern void dhcp_request(const byte *req_ip);
 extern int dhcp_send(byte msg_type, const byte *data, u_int data_len);
 extern void dhcp_main(const byte *dhcp_msg, u_int msg_len);
 

@@ -10,7 +10,12 @@ static netdevice_t *device;
 
 static dhcp_op_t *dhcp_op_list = NULL;
 
-static u_int xid_waiting;
+static struct {
+	u_int xid_waiting;
+	byte request_ip[IP_ADDR_LEN];
+	byte server_id[IP_ADDR_LEN];
+
+} dhcp_req_que;	  // DHCP Request queue
 
 /**
  * DHCP option content filler
@@ -96,7 +101,7 @@ void dhcp_discover() {
 	header.hdr_type = ETH_HDR_TYPE;
 	header.hdr_len = ETH_ADDR_LEN;
 	header.hops = 0;
-	xid_waiting = rand();
+	dhcp_req_que.xid_waiting = rand();
 	memcpy(header.xid, "FRED", DHCP_XID_LEN);
 	// memcpy(header.xid, &xid_waiting, DHCP_XID_LEN);
 	header.secs = 0;
@@ -134,6 +139,64 @@ void dhcp_discover() {
 
 	// Send out the DHCP discover
 	dhcp_send(DHCP_MSG.DISCOVER, buf, dhcp_discover_len);
+
+	return;
+}
+
+/**
+ * Send a DHCP Request message
+ * @param req_ip IP Requested
+ */
+void dhcp_request(const byte *req_ip) {
+	dhcp_hdr_t header;	 // DHCP header to send
+
+	/**
+	 * Fill in the data
+	 */
+	header.op = DHCP_OP_TO_SERVER;
+	header.hdr_type = ETH_HDR_TYPE;
+	header.hdr_len = ETH_ADDR_LEN;
+	header.hops = 0;
+	memcpy(header.xid, "FRED", DHCP_XID_LEN);
+	// memcpy(header.xid, &dhcp_req_que.xid_waiting, DHCP_XID_LEN);
+	header.secs = 0;
+	header.flags = 0;
+
+	GET_IP(header.ciaddr) = 0;
+	GET_IP(header.yiaddr) = 0;
+	GET_IP(header.siaddr) = 0;
+	GET_IP(header.giaddr) = 0;
+	memcpy(header.chaddr, MY_MAC_ADDR, ETH_ADDR_LEN);
+
+	memset(header.sname, 0, DHCP_SNAME_LEN);
+	memset(header.file, 0, DHCP_FILE_LEN);
+
+	// Total length of DHCP request packet
+	int dhcp_request_len = sizeof(dhcp_hdr_t) + 20;
+
+	// DHCP discove packet buffer
+	byte buf[dhcp_request_len];
+
+	// Fill in the header
+	memcpy(buf, &header, sizeof(dhcp_hdr_t));
+
+	// Fill in the DHCP Magic Cookie
+	int offset = sizeof(dhcp_hdr_t);   // Offset of the buf
+	memcpy(buf + offset, DHCP_MAGIC_COOKIE, 4);
+
+	// Update the offset
+	offset += 4;
+	// Fill in the Message type
+	offset += dhcp_op_filler(buf + offset, DHCP_OP.Message_Type, 1, &DHCP_MSG.REQUEST);
+	// Fill in the Required IP address
+	offset += dhcp_op_filler(buf + offset, DHCP_OP.Address_Request, 1, req_ip);
+	// Fill in the Server ID
+	// offset += dhcp_op_filler(buf + offset, DHCP_OP.Server_Identifier, 1, req_ip);
+	// Fill in the End option
+	dhcp_op_filler(buf + offset, DHCP_OP.End, 1, NULL);
+
+	// Send out the DHCP discover
+	dhcp_send(DHCP_MSG.DISCOVER, buf, dhcp_request_len);
 
 	return;
 }

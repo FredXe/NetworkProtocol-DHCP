@@ -44,19 +44,20 @@ int main() {
 	// netdevice_xmit(device, eth_hdr, pay, 0);
 	// netdevice_add_protocol(device, IPV4_ETH_TYPE, callback_test);
 	// netdevice_rx(device);
-	// byte ip[IP_ADDR_LEN];
-	// memcpy(ip, string_to_ip_addr("192.168.1.1"), IP_ADDR_LEN);
 	// printf("%s\n", ip_addr_to_string(ip, NULL));
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	// arp_request(device, ip);
 	netdevice_t *device = dhcp_init();
-	dhcp_discover();
-	// ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
 
 	byte ip[IP_ADDR_LEN];
-	memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
+	IP_COPY(ip, string_to_ip_addr("192.168.1.116"));
+	dhcp_request(ip);
+	// ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
+
+	// byte ip[IP_ADDR_LEN];
+	// memcpy(ip, string_to_ip_addr("192.168.1.10"), IP_ADDR_LEN);
 	// memcpy(ip, string_to_ip_addr("8.8.8.8"), IP_ADDR_LEN);
 	// ipv4_hdr_t ip_header = ip_hdr_maker(IP_PROTO_UDP, get_my_ip(device), ip, 100);
 	// byte data[100] = "FREDDY :D:D:D";
