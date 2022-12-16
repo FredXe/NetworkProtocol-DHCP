@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-typedef int (*dhcp_op_handler)(const byte *data, u_int length);
+typedef int (*dhcp_op_handler)(const byte *option);
 
 typedef struct {
 	char name[32];
@@ -12,6 +12,7 @@ typedef struct {
 	dhcp_op_handler handler;
 } dhcp_op_t;
 
+#define DHCP_OP_TAG_NUM 11
 typedef struct {
 	const byte Pad;					 // 0
 	const byte Subnet_Mask;			 // 1
@@ -24,9 +25,10 @@ typedef struct {
 	const byte Server_Identifier;	 // 54
 	const byte Parameter_List;		 // 55
 	const byte End;					 // 255
-} dhcp_op_code_t;
-extern const dhcp_op_code_t DHCP_OP;
+} dhcp_op_tag_t;					 // DHCP Option tag
+extern const dhcp_op_tag_t DHCP_OP;
 
+#define DHCP_MSG_NAME_LEN 32
 typedef struct {
 	const byte DISCOVER;		   //  1
 	const byte OFFER;			   //  2
@@ -46,8 +48,9 @@ typedef struct {
 	const byte ACTIVELEASEQUERY;   //  16
 	const byte LEASEQUERYSTATUS;   //  17
 	const byte TLS;				   //  18
-} dhcp_msg_t;
+} dhcp_msg_t;					   // DHCP Message type
 extern const dhcp_msg_t DHCP_MSG;
+extern char DHCP_MSG_NAME[19][DHCP_MSG_NAME_LEN];
 
 extern void dhcp_op_init(dhcp_op_t **list_ptr);
 

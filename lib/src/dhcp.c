@@ -17,6 +17,15 @@ static struct {
 
 } dhcp_req_que;	  // DHCP Request queue
 
+static void dhcp_dump(dhcp_hdr_t header, const byte *options) {
+	// dhcp_op_value_list_t op_value_list = dhcp_op_tag_handler(options);
+	printf(DHCP_DEBUG_COLOR);
+	// printf("\tMessage Type: %s\n", DHCP_MSG_NAME[*op_value_list.Message_Type.value]);
+	printf("\tDHCP \n");
+
+	printf(NONE);
+}
+
 /**
  * DHCP option content filler
  * @param ptr Where you wanna fill the option in
@@ -191,7 +200,7 @@ void dhcp_request(const byte *req_ip) {
 	// Fill in the Required IP address
 	offset += dhcp_op_filler(buf + offset, DHCP_OP.Address_Request, 1, req_ip);
 	// Fill in the Server ID
-	// offset += dhcp_op_filler(buf + offset, DHCP_OP.Server_Identifier, 1, req_ip);
+	// offset += dhcp_op_filler(buf + offset, DHCP_OP.Server_Identifier, 1, dhcp_req_que.server_id);
 	// Fill in the End option
 	dhcp_op_filler(buf + offset, DHCP_OP.End, 1, NULL);
 
@@ -249,5 +258,21 @@ int dhcp_send(byte msg_type, const byte *data, u_int data_len) {
 }
 
 void dhcp_main(const byte *dhcp_msg, u_int msg_len) {
-	printf(":D================\n");
+	dhcp_hdr_t header = *(dhcp_hdr_t *)dhcp_msg;
+	u_int op_offset = sizeof(dhcp_hdr_t) + DHCP_MAGIC_LEN;
+	u_int op_len = msg_len - op_offset;
+	byte options[op_len];
+	memcpy(options, dhcp_msg + op_offset, op_len);
+
+	// #if (DEBUG_DHCP_DUMP == 1)
+	printf(DHCP_2_DEBUG_COLOR "DHCP received\n" DHCP_DEBUG_COLOR);
+	if (GET_IP(header.yiaddr) != 0) {
+		printf("\tYIADDR=%-16s\n", ip_addr_to_string(header.yiaddr, NULL));
+	}
+	// #endif
+
+	dhcp_op_list[*options].handler(options);
+#if (DEBUG_DHCP_DUMP == 1)
+	printf(NONE);
+#endif
 }

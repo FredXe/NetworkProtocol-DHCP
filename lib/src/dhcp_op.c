@@ -2,8 +2,29 @@
 
 #include "util.h"
 
-const dhcp_op_code_t DHCP_OP = {0, 1, 3, 6, 15, 50, 51, 53, 54, 55, 255};
+const dhcp_op_tag_t DHCP_OP = {0, 1, 3, 6, 15, 50, 51, 53, 54, 55, 255};
 const dhcp_msg_t DHCP_MSG = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+char DHCP_MSG_NAME[19][DHCP_MSG_NAME_LEN] = {"NONE",
+											 "DISCOVER",
+											 "OFFER",
+											 "REQUEST",
+											 "DECLINE",
+											 "ACK",
+											 "NAK",
+											 "RELEASE",
+											 "INFORM",
+											 "FORCERENEW",
+											 "LEASEQUERY",
+											 "LEASEUNASSIGNED",
+											 "LEASEUNKNOWN",
+											 "LEASEACTIVE",
+											 "BULKLEASEQUERY",
+											 "LEASEQUERYDONE",
+											 "ACTIVELEASEQUERY",
+											 "LEASEQUERYSTATUS",
+											 "TLS"};
+
+static int message_type_h(const byte *option);
 
 void dhcp_op_init(dhcp_op_t **list_ptr) {
 	if (*list_ptr != NULL) {
@@ -47,6 +68,7 @@ void dhcp_op_init(dhcp_op_t **list_ptr) {
 	strcpy(list[DHCP_OP.Message_Type].name, "DHCP Message Type");
 	list[DHCP_OP.Message_Type].length = 1;
 	list[DHCP_OP.Message_Type].len_mul = 0;
+	list[DHCP_OP.Message_Type].handler = message_type_h;
 
 	strcpy(list[DHCP_OP.Server_Identifier].name, "DHCP Server Identifier");
 	list[DHCP_OP.Server_Identifier].length = 4;
@@ -61,4 +83,14 @@ void dhcp_op_init(dhcp_op_t **list_ptr) {
 	list[DHCP_OP.End].len_mul = 0;
 
 	return;
+}
+
+int message_type_h(const byte *option) {
+	byte op_tag = *option;
+	byte len = *(option + 1);
+	byte value[len];
+	memcpy(value, option + 2, len);
+	printf("\tMessage Type: %s\n", DHCP_MSG_NAME[value[0]]);
+
+	return len + 2;
 }
