@@ -4,19 +4,20 @@
 
 #include "dhcp_op.h"
 
+// DHCP Magic Cookie
 const byte DHCP_MAGIC_COOKIE[DHCP_MAGIC_LEN] = {0x63, 0x82, 0x53, 0x63};
 
-static netdevice_t *device;
-
-static dhcp_op_t *dhcp_op_list = NULL;
+static dhcp_op_t *dhcp_op_list = NULL;	 // DHCP Options list
 
 static struct {
-	u_int xid_waiting;
-	byte request_ip[IP_ADDR_LEN];
-	byte server_id[IP_ADDR_LEN];
-
+	// XID that we're waiting server for response
+	byte xid_waiting[DHCP_XID_LEN];
 } dhcp_req_que;	  // DHCP Request queue
 
+/**
+ * To print out the DHCP message's header
+ * @param header DHCP header
+ */
 static void dhcp_dump(dhcp_hdr_t header) {
 	printf("\t|==========" DHCP_DEBUG_COLOR "HEADER" NONE "===========|\n");
 	printf("\t|  " DHCP_DEBUG_COLOR "OP" NONE "  |" DHCP_DEBUG_COLOR "HTYPE" NONE
@@ -79,14 +80,7 @@ static int dhcp_op_filler(byte *ptr, byte op_tag, u_int len_mul, const byte *con
  * DHCP_ERROR_NULL on error
  */
 netdevice_t *dhcp_init() {
-	if (device != NULL) {
-		fprintf(stderr,
-				ERR_COLOR
-				"%s:%d in %s(): default netdevice has been initialized, this function should "
-				"only be called once\n" NONE,
-				__FILE__, __LINE__, __func__);
-		return DHCP_ERROR_NULL;
-	}
+	netdevice_t *device;
 
 	// Return DHCP_ERROR_NULL if udp_init() error
 	if ((device = udp_init()) == UDP_ERROR_NULL) {
@@ -130,8 +124,8 @@ void dhcp_discover() {
 	header.hdr_type = ETH_HDR_TYPE;
 	header.hdr_len = ETH_ADDR_LEN;
 	header.hops = 0;
-	dhcp_req_que.xid_waiting = rand();
-	memcpy(header.xid, "FRED", DHCP_XID_LEN);
+	*(u_int *)(dhcp_req_que.xid_waiting) = rand();
+	memcpy(header.xid, &dhcp_req_que.xid_waiting, DHCP_XID_LEN);
 	// memcpy(header.xid, &xid_waiting, DHCP_XID_LEN);
 	header.secs = 0;
 	header.flags = 0;
@@ -186,7 +180,7 @@ void dhcp_request(const byte *req_ip) {
 	header.hdr_type = ETH_HDR_TYPE;
 	header.hdr_len = ETH_ADDR_LEN;
 	header.hops = 0;
-	memcpy(header.xid, "FRED", DHCP_XID_LEN);
+	memcpy(header.xid, &dhcp_req_que.xid_waiting, DHCP_XID_LEN);
 	// memcpy(header.xid, &dhcp_req_que.xid_waiting, DHCP_XID_LEN);
 	header.secs = 0;
 	header.flags = 0;
@@ -268,6 +262,10 @@ int dhcp_send(byte msg_type, const byte *data, u_int data_len) {
 		udp_param.dst_port = UDP_PORT_DHCP_C;
 	}
 
+#if (DEBUG_DHCP_SEND == 1)
+	dhcp_client_main(data, data_len);
+#endif
+
 	if (udp_send(udp_param, data, data_len) == UDP_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): udp_send() error\n" NONE, __FILE__, __LINE__,
 				__func__);
@@ -277,6 +275,11 @@ int dhcp_send(byte msg_type, const byte *data, u_int data_len) {
 	return 0;
 }
 
+/**
+ * DHCP client capture handle
+ * @param dhcp_msg DHCP message
+ * @param msg_len Length of message
+ */
 void dhcp_client_main(const byte *dhcp_msg, u_int msg_len) {
 	// DHCP header
 	dhcp_hdr_t header = *(dhcp_hdr_t *)dhcp_msg;
@@ -293,7 +296,11 @@ void dhcp_client_main(const byte *dhcp_msg, u_int msg_len) {
 	memcpy(options, dhcp_msg + op_offset, op_len);
 
 #if (DEBUG_DHCP_HEADER == 1)
-	printf(DHCP_2_DEBUG_COLOR "DHCP received\n" NONE);
+	if (header.op == DHCP_OP_TO_CLIENT)
+		printf(DHCP_2_DEBUG_COLOR "DHCP Received\n" NONE);
+	else
+		printf(DHCP_2_DEBUG_COLOR "DHCP Send\n" NONE);
+
 	dhcp_dump(header);
 #endif
 
@@ -303,6 +310,14 @@ void dhcp_client_main(const byte *dhcp_msg, u_int msg_len) {
 		// printf("%d\n", *op_it);
 	}
 	dhcp_op_list[*op_it].handler(op_it);
+
+	if (get_msg_type() == DHCP_MSG.OFFER) {
+		if (memcmp(dhcp_req_que.xid_waiting, header.xid, DHCP_XID_LEN) == 0) {
+			dhcp_request(header.yiaddr);
+		}
+	} else if (get_msg_type() == DHCP_MSG.ACK) {
+		memset(dhcp_req_que.xid_waiting, 0, DHCP_XID_LEN);
+	}
 
 	return;
 }

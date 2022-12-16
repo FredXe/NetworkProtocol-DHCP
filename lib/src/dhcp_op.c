@@ -44,11 +44,15 @@ static struct dhcp_ack_info_t {
 	byte router[IP_ADDR_LEN];
 	byte subnet_mask[IP_ADDR_LEN];
 	byte dns_server[IP_ADDR_LEN];
-
 	byte dhcp_server_id[IP_ADDR_LEN];
 
 } dhcp_ack_info;
 
+/**
+ * Initialize the DHCP Option list by
+ * filling the data.
+ * @param list_ptr
+ */
 void dhcp_op_init(dhcp_op_t **list_ptr) {
 	if (*list_ptr != NULL) {
 		fprintf(stderr,
@@ -123,7 +127,11 @@ void dhcp_op_init(dhcp_op_t **list_ptr) {
 	return;
 }
 
-set_ack_info_my_ip(const byte *my_ip) {
+byte get_msg_type() {
+	return dhcp_ack_info.msg_type;
+}
+
+void set_ack_info_my_ip(const byte *my_ip) {
 	IP_COPY(dhcp_ack_info.my_ip, my_ip);
 }
 
@@ -135,46 +143,59 @@ u_int default_h(const byte *option) {
 uint pad_h(const byte *option) {
 	return 1;
 }
+
 uint subnet_mask_h(const byte *option) {
 	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "Subnet Mask" NONE ": " IP_DEBUG_COLOR "%s" NONE "\n",
 		   ip_addr_to_string(value, NULL));
+#endif
 
 	IP_COPY(dhcp_ack_info.subnet_mask, value);
 
 	return len + 2;
 }
+
 uint router_h(const byte *option) {
 	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	for (int offset = 0; offset < len; offset += IP_ADDR_LEN) {
 		printf("\t" DHCP_DEBUG_COLOR "Router #%d" NONE ": " IP_DEBUG_COLOR "%s" NONE "\n",
 			   (offset) / 4 + 1, ip_addr_to_string(value + offset, NULL));
 	}
+#endif
 
 	IP_COPY(dhcp_ack_info.router, value);
 
 	return len + 2;
 }
+
 uint dns_h(const byte *option) {
 	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	for (int offset = 0; offset < len; offset += IP_ADDR_LEN) {
 		printf("\t" DHCP_DEBUG_COLOR "DNS Server #%d" NONE ": " IP_DEBUG_COLOR "%s" NONE "\n",
 			   (offset) / 4 + 1, ip_addr_to_string(value + offset, NULL));
 	}
+#endif
 
 	IP_COPY(dhcp_ack_info.dns_server, value);
 
 	return len + 2;
 }
+
 uint domain_name_h(const byte *option) {
 	byte len = *(option + 1);
 	return len + 2;
@@ -184,40 +205,55 @@ uint address_req_h(const byte *option) {
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "Address Request" NONE ": " IP_DEBUG_COLOR "%ss" NONE "\n",
 		   ip_addr_to_string(value, NULL));
+#endif
 
 	return len + 2;
 }
+
 uint address_time_h(const byte *option) {
 	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "Address Time" NONE ": " DHCP_DEBUG_COLOR "%ds" NONE "\n",
 		   swap32(*(u_int *)value));
+#endif
 
 	return len + 2;
 }
+
 uint message_type_h(const byte *option) {
 	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "Message Type" NONE ": " DHCP_DEBUG_COLOR "%s" NONE "\n",
 		   DHCP_MSG_NAME[value[0]]);
+#endif
 
 	dhcp_ack_info.msg_type = value[0];
 
 	return len + 2;
 }
+
 uint server_id_h(const byte *option) {
 	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "Server ID" NONE ": " IP_DEBUG_COLOR "%s" NONE "\n",
 		   ip_addr_to_string(value, NULL));
+#endif
 
 	IP_COPY(dhcp_ack_info.dhcp_server_id, value);
 
@@ -229,19 +265,25 @@ uint param_list_h(const byte *option) {
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
+
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "Parameter Request List" NONE ":" DHCP_DEBUG_COLOR "\n");
 
 	for (int i = 0; i < len; i++) {
 		printf("\t\t%s (%d)", dhcp_op_list[*(value + i)].name, *(value + i));
 	}
+#endif
 
 	return len + 2;
 }
 
 uint end_h(const byte *option) {
+#if (DEBUG_DHCP_OPTIONS == 1)
 	printf("\t" DHCP_DEBUG_COLOR "End" NONE "\n");
+#endif
+
 	if (dhcp_ack_info.msg_type != DHCP_MSG.ACK) {
-		goto end_exit;
+		return 1;
 	}
 
 	// Set the IPv4 information from DHCP ACK message
@@ -267,7 +309,5 @@ uint end_h(const byte *option) {
 		   ip_addr_to_string(MY_IPV4_INFO.subnet, subnet));
 #endif
 
-end_exit:
-	memset(&dhcp_ack_info, 0, sizeof(struct dhcp_ack_info_t));
 	return 1;
 }

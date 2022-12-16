@@ -53,7 +53,7 @@ int main() {
 
 	byte ip[IP_ADDR_LEN];
 	IP_COPY(ip, string_to_ip_addr("192.168.1.116"));
-	dhcp_request(ip);
+	dhcp_discover();
 	// ip_add_protocol(IP_PROTO_UDP, test_udp_callback);
 
 	// byte ip[IP_ADDR_LEN];
