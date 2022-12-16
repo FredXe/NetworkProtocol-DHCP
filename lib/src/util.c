@@ -181,6 +181,11 @@ two_bytes swap16(two_bytes in) {
 	return ((in << 8) | (in >> 8));
 }
 
+u_int swap32(u_int in) {
+	byte *it = (byte *)&in;
+	return (u_int)((it[0] << 24) | (it[1] << 16) | (it[2] << 8) | it[3]);
+}
+
 /**
  * Calculate the checksum defined in RFC 791.
  * The checksum field is the 16-bit ones' complement of

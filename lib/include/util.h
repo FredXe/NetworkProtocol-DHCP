@@ -68,6 +68,7 @@ extern const byte *string_to_eth_addr(const char *eth_addr_str);
 extern const char *eth_addr_to_string(const byte *eth_addr, char *buf);
 extern void print_data(const byte *data, const u_int data_len);
 extern two_bytes swap16(two_bytes in);
+extern u_int swap32(u_int in);
 extern two_bytes checksum(byte *data, u_int len);
 
 #endif

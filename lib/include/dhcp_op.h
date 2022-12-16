@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-typedef int (*dhcp_op_handler)(const byte *option);
+typedef u_int (*dhcp_op_handler)(const byte *option);
 
 typedef struct {
 	char name[32];
@@ -53,5 +53,6 @@ extern const dhcp_msg_t DHCP_MSG;
 extern char DHCP_MSG_NAME[19][DHCP_MSG_NAME_LEN];
 
 extern void dhcp_op_init(dhcp_op_t **list_ptr);
+extern void set_ack_info_my_ip(const byte *my_ip);
 
 #endif

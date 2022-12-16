@@ -17,13 +17,26 @@ static struct {
 
 } dhcp_req_que;	  // DHCP Request queue
 
-static void dhcp_dump(dhcp_hdr_t header, const byte *options) {
-	// dhcp_op_value_list_t op_value_list = dhcp_op_tag_handler(options);
-	printf(DHCP_DEBUG_COLOR);
-	// printf("\tMessage Type: %s\n", DHCP_MSG_NAME[*op_value_list.Message_Type.value]);
-	printf("\tDHCP \n");
+static void dhcp_dump(dhcp_hdr_t header) {
+	printf("\t|==========" DHCP_DEBUG_COLOR "HEADER" NONE "===========|\n");
+	printf("\t|  " DHCP_DEBUG_COLOR "OP" NONE "  |" DHCP_DEBUG_COLOR "HTYPE" NONE
+		   " | " DHCP_DEBUG_COLOR "HLEN" NONE " | " DHCP_DEBUG_COLOR "HOPS" NONE " |\n");
+	printf("\t| " DHCP_DEBUG_COLOR "0x%02x" NONE " | " DHCP_DEBUG_COLOR "0x%02x" NONE
+		   " | " DHCP_DEBUG_COLOR "0x%02x" NONE " | " DHCP_DEBUG_COLOR "0x%02x" NONE " |\n",
+		   header.op, header.hdr_type, header.hdr_len, header.hops);
+	printf("\t|                           |\n");
+	printf("\t|" DHCP_DEBUG_COLOR "XID" NONE "=" DHCP_DEBUG_COLOR "0x%02x%02x%02x%02x" NONE
+		   "             |\n",
+		   header.xid[0], header.xid[1], header.xid[2], header.xid[3]);
+	if (GET_IP(header.yiaddr) != 0) {
+		printf("\t|" DHCP_DEBUG_COLOR "YIADDR" NONE "=" IP_DEBUG_COLOR "%-16s" NONE "    |\n",
+			   ip_addr_to_string(header.yiaddr, NULL));
+	}
+	printf("\t|" DHCP_DEBUG_COLOR "CHADDR" NONE "=" ETH_DEBUG_COLOR "%s" NONE "   |\n",
+		   eth_addr_to_string(header.chaddr, NULL));
+	printf("\t|==========" DHCP_DEBUG_COLOR "OPTIONS" NONE "==========|\n");
 
-	printf(NONE);
+	return;
 }
 
 /**
@@ -82,12 +95,19 @@ netdevice_t *dhcp_init() {
 		return DHCP_ERROR_NULL;
 	}
 
-	// Regist DHCP to UDP
-	if (udp_add_protocol(UDP_PORT_DHCP_C, dhcp_main, "DHCP") == UDP_ERROR) {
+	// Regist DHCP client to UDP
+	if (udp_add_protocol(UDP_PORT_DHCP_C, dhcp_client_main, "DHCP") == UDP_ERROR) {
 		fprintf(stderr, ERR_COLOR "%s:%d in %s(): udp_add_protocol() error\n" NONE, __FILE__,
 				__LINE__, __func__);
 		return DHCP_ERROR_NULL;
 	}
+
+	// Regist DHCP server to UDP
+	// if (udp_add_protocol(UDP_PORT_DHCP_S, dhcp_main, "DHCP") == UDP_ERROR) {
+	// 	fprintf(stderr, ERR_COLOR "%s:%d in %s(): udp_add_protocol() error\n" NONE, __FILE__,
+	// 			__LINE__, __func__);
+	// 	return DHCP_ERROR_NULL;
+	// }
 
 	// Initialize the option list
 	dhcp_op_init(&dhcp_op_list);
@@ -257,22 +277,32 @@ int dhcp_send(byte msg_type, const byte *data, u_int data_len) {
 	return 0;
 }
 
-void dhcp_main(const byte *dhcp_msg, u_int msg_len) {
+void dhcp_client_main(const byte *dhcp_msg, u_int msg_len) {
+	// DHCP header
 	dhcp_hdr_t header = *(dhcp_hdr_t *)dhcp_msg;
+	// Options' offset in DHCP message
 	u_int op_offset = sizeof(dhcp_hdr_t) + DHCP_MAGIC_LEN;
+	// Length of options
 	u_int op_len = msg_len - op_offset;
+	// Options buffer
 	byte options[op_len];
+	// Iterator of options
+	byte *op_it = options;
+
+	// Copy the Options into buffer
 	memcpy(options, dhcp_msg + op_offset, op_len);
 
-	// #if (DEBUG_DHCP_DUMP == 1)
-	printf(DHCP_2_DEBUG_COLOR "DHCP received\n" DHCP_DEBUG_COLOR);
-	if (GET_IP(header.yiaddr) != 0) {
-		printf("\tYIADDR=%-16s\n", ip_addr_to_string(header.yiaddr, NULL));
-	}
-	// #endif
-
-	dhcp_op_list[*options].handler(options);
-#if (DEBUG_DHCP_DUMP == 1)
-	printf(NONE);
+#if (DEBUG_DHCP_HEADER == 1)
+	printf(DHCP_2_DEBUG_COLOR "DHCP received\n" NONE);
+	dhcp_dump(header);
 #endif
+
+	set_ack_info_my_ip(header.yiaddr);
+	while (*op_it != DHCP_OP.End) {
+		op_it += dhcp_op_list[*op_it].handler(op_it);
+		// printf("%d\n", *op_it);
+	}
+	dhcp_op_list[*op_it].handler(op_it);
+
+	return;
 }
