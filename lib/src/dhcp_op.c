@@ -145,7 +145,6 @@ uint pad_h(const byte *option) {
 }
 
 uint subnet_mask_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
@@ -161,7 +160,6 @@ uint subnet_mask_h(const byte *option) {
 }
 
 uint router_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
@@ -179,7 +177,6 @@ uint router_h(const byte *option) {
 }
 
 uint dns_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
@@ -200,14 +197,14 @@ uint domain_name_h(const byte *option) {
 	byte len = *(option + 1);
 	return len + 2;
 }
+
 uint address_req_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
 
 #if (DEBUG_DHCP_OPTIONS == 1)
-	printf("\t" DHCP_DEBUG_COLOR "Address Request" NONE ": " IP_DEBUG_COLOR "%ss" NONE "\n",
+	printf("\t" DHCP_DEBUG_COLOR "Address Request" NONE ": " IP_DEBUG_COLOR "%s" NONE "\n",
 		   ip_addr_to_string(value, NULL));
 #endif
 
@@ -215,7 +212,6 @@ uint address_req_h(const byte *option) {
 }
 
 uint address_time_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
@@ -229,7 +225,6 @@ uint address_time_h(const byte *option) {
 }
 
 uint message_type_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
@@ -245,7 +240,6 @@ uint message_type_h(const byte *option) {
 }
 
 uint server_id_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);
@@ -261,7 +255,6 @@ uint server_id_h(const byte *option) {
 }
 
 uint param_list_h(const byte *option) {
-	byte op_tag = *option;
 	byte len = *(option + 1);
 	byte value[len];
 	memcpy(value, option + 2, len);

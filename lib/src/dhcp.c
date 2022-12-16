@@ -114,7 +114,7 @@ netdevice_t *dhcp_init() {
 /**
  * Send a DHCP Discover message
  */
-void dhcp_discover() {
+void dhcp_discover(const byte *my_mac) {
 	dhcp_hdr_t header;	 // DHCP header to send
 
 	/**
@@ -134,7 +134,7 @@ void dhcp_discover() {
 	GET_IP(header.yiaddr) = 0;
 	GET_IP(header.siaddr) = 0;
 	GET_IP(header.giaddr) = 0;
-	memcpy(header.chaddr, MY_MAC_ADDR, ETH_ADDR_LEN);
+	memcpy(header.chaddr, my_mac, ETH_ADDR_LEN);
 
 	memset(header.sname, 0, DHCP_SNAME_LEN);
 	memset(header.file, 0, DHCP_FILE_LEN);
@@ -170,7 +170,7 @@ void dhcp_discover() {
  * Send a DHCP Request message
  * @param req_ip IP Requested
  */
-void dhcp_request(const byte *req_ip) {
+void dhcp_request(const byte *req_ip, const byte *my_mac) {
 	dhcp_hdr_t header;	 // DHCP header to send
 
 	/**
@@ -189,7 +189,7 @@ void dhcp_request(const byte *req_ip) {
 	GET_IP(header.yiaddr) = 0;
 	GET_IP(header.siaddr) = 0;
 	GET_IP(header.giaddr) = 0;
-	memcpy(header.chaddr, MY_MAC_ADDR, ETH_ADDR_LEN);
+	memcpy(header.chaddr, my_mac, ETH_ADDR_LEN);
 
 	memset(header.sname, 0, DHCP_SNAME_LEN);
 	memset(header.file, 0, DHCP_FILE_LEN);
@@ -313,7 +313,7 @@ void dhcp_client_main(const byte *dhcp_msg, u_int msg_len) {
 
 	if (get_msg_type() == DHCP_MSG.OFFER) {
 		if (memcmp(dhcp_req_que.xid_waiting, header.xid, DHCP_XID_LEN) == 0) {
-			dhcp_request(header.yiaddr);
+			dhcp_request(header.yiaddr, header.chaddr);
 		}
 	} else if (get_msg_type() == DHCP_MSG.ACK) {
 		memset(dhcp_req_que.xid_waiting, 0, DHCP_XID_LEN);
