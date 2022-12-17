@@ -1,10 +1,12 @@
 # DHCP c program based on libpcap
-## Usage:
+## Build and run:
 ```bash
 
 # Build and run
 make run
-
+```
+## Usage:
+```
 # Select the device
 {device_number}
 
