@@ -48,6 +48,8 @@
 
 #define MAX_LINE_LEN 16	  // MAX bytes print in one line
 
+#define MAX_INPUT_LEN 256	// MAX Length of one line input
+
 #define GET_IP(ip_addr) (*((ip_addr_t *)(ip_addr)))
 
 #define MAX(A, B) ((A > B) ? A : B)
@@ -59,6 +61,7 @@ extern byte MY_MAC_ADDR[ETH_ADDR_LEN];
 /*================
  * Public Methods
  *================*/
+extern int readready();
 extern const byte *set_my_mac(const netdevice_t *device);
 extern const byte *get_my_ip(const netdevice_t *device);
 extern const int get_my_ip_info(ipv4_info_t *info);

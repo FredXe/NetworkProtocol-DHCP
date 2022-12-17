@@ -1,23 +1,37 @@
-# Netdevice
+# Netdevice ---
+# Ethernet Frame header
 DEBUG_FRAME_HDR=0
+# Ethernet Frame payload
 DEBUG_FRAME_DUMP=0
 
-# ARP
+# ARP ---
+# ARP Packet info
 DEBUG_ARP=0
+# Print if ARP Reply
 DEBUG_ARP_REPLY=0
-DEBUG_ARP_REQUEST=0
+# Print if ARP Request
+DEBUG_ARP_REQUEST=1
+# Printf if ARP table added
 DEBUG_ARP_CACHE=0
 
-# IP
+# IP ---
+# IP Receive info
 DEBUG_IP_RECEIVED=0
+# IP Send info
 DEBUG_IP_SEND=0
 
-# UDP
+# UDP ---
+# Proto upper layer add into UDP
 DEBUG_UDP_ADD_PROTO=0
+# UDP Send info
 DEBUG_UDP_SEND=0
 
-# DHCP
+# DHCP ---
+# DHCP apply info
 DEBUG_DHCP=1
+# DHCP Discover or Request info
 DEBUG_DHCP_SEND=1
+# DHCP header
 DEBUG_DHCP_HEADER=1
+# DHCP message's options
 DEBUG_DHCP_OPTIONS=1

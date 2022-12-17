@@ -20,6 +20,8 @@
  */
 #define ETH_ALLOC(addr) byte *addr = (byte *)calloc(ETH_ADDR_LEN, sizeof(byte))
 
+#define ETH_COPY(dst, src) memcpy(dst, src, ETH_ADDR_LEN)
+
 typedef struct netdevice netdevice_t;
 typedef struct protocol protocol_t;
 typedef void (*netdevice_handler)(netdevice_t *netdevice, const byte *packet, unsigned int length);

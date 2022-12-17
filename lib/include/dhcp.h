@@ -46,7 +46,7 @@ typedef struct {
  * Public Methods
  *================*/
 extern netdevice_t *dhcp_init();
-extern void dhcp_discover(const byte *my_mac);
+extern int dhcp_discover(const byte *my_mac);
 extern void dhcp_request(const byte *req_ip, const byte *my_mac);
 extern int dhcp_send(byte msg_type, const byte *data, u_int data_len);
 extern void dhcp_client_main(const byte *dhcp_msg, u_int msg_len);

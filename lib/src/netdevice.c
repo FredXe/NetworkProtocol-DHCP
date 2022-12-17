@@ -124,7 +124,8 @@ int netdevice_getdevice(const int define_n, char *dev_name) {
 	for (pcap_if_t *d_tmp = all_dev; d_tmp != NULL; d_tmp = d_tmp->next) {
 		dev_cnt++;
 		if (dev_sel == 0)
-			printf("%d. %s\n", dev_cnt, d_tmp->name);
+			printf("%d. %s\n\t(%s)\n", dev_cnt, d_tmp->name,
+				   (d_tmp->description) ? d_tmp->description : "No description availabel");
 	}
 
 	/**

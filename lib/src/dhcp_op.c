@@ -40,6 +40,7 @@ static u_int end_h(const byte *option);
 
 static struct dhcp_ack_info_t {
 	byte msg_type;
+	byte chaddr[ETH_ADDR_LEN];
 	byte my_ip[IP_ADDR_LEN];
 	byte router[IP_ADDR_LEN];
 	byte subnet_mask[IP_ADDR_LEN];
@@ -133,6 +134,10 @@ byte get_msg_type() {
 
 void set_ack_info_my_ip(const byte *my_ip) {
 	IP_COPY(dhcp_ack_info.my_ip, my_ip);
+}
+
+void set_chaddr(const byte *chaddr) {
+	ETH_COPY(dhcp_ack_info.chaddr, chaddr);
 }
 
 u_int default_h(const byte *option) {
@@ -276,6 +281,10 @@ uint end_h(const byte *option) {
 #endif
 
 	if (dhcp_ack_info.msg_type != DHCP_MSG.ACK) {
+		return 1;
+	}
+
+	if (memcmp(dhcp_ack_info.chaddr, MY_MAC_ADDR, ETH_ADDR_LEN)) {
 		return 1;
 	}
 

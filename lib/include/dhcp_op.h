@@ -59,5 +59,6 @@ extern char DHCP_MSG_NAME[19][DHCP_MSG_NAME_LEN];
 extern void dhcp_op_init(dhcp_op_t **list_ptr);
 extern byte get_msg_type();
 extern void set_ack_info_my_ip(const byte *my_ip);
+extern void set_chaddr(const byte *chaddr);
 
 #endif

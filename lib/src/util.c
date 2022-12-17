@@ -5,6 +5,45 @@
 
 #include "ip.h"
 
+/**
+ * This #if preprocess block is import
+ * from https://github.com/nuk-icslab/csc521.git
+ * @lib/src/util.c
+ */
+#ifndef FG_OS_POSIX
+#define FG_OS_POSIX 1
+#endif	 // FG_OS_POSIX
+#if (FG_OS_POSIX == 1)
+#include <errno.h>
+#include <sys/select.h>
+
+/*
+ * readready() - check whether read ready for given file descriptor
+ *	. return non-negative if ready, 0 if not ready, negative on errors
+ */
+int readready() {
+	fd_set map;
+	int fd = 0; /* stdin */
+	int ret;
+	struct timeval _zerotimeval = {0, 0};
+
+	do {
+		FD_ZERO(&map);
+		FD_SET(fd, &map);
+		ret = select(fd + 1, &map, NULL, NULL, &_zerotimeval);
+		if (ret >= 0)
+			return ret;
+	} while (errno == EINTR);
+	return ret;
+}
+
+#else
+int readready() {
+	extern int _kbhit();
+	return _kbhit();
+}
+#endif /* FG_OS_POSIX */
+
 ipv4_info_t MY_IPV4_INFO;
 byte MY_MAC_ADDR[ETH_ADDR_LEN];
 

@@ -14,6 +14,7 @@ static struct {
 	byte xid_waiting[DHCP_XID_LEN];
 } dhcp_req_que;	  // DHCP Request queue
 
+#if (DEBUG_DHCP_HEADER == 1)
 /**
  * To print out the DHCP message's header
  * @param header DHCP header
@@ -39,6 +40,7 @@ static void dhcp_dump(dhcp_hdr_t header) {
 
 	return;
 }
+#endif
 
 /**
  * DHCP option content filler
@@ -96,13 +98,6 @@ netdevice_t *dhcp_init() {
 		return DHCP_ERROR_NULL;
 	}
 
-	// Regist DHCP server to UDP
-	// if (udp_add_protocol(UDP_PORT_DHCP_S, dhcp_main, "DHCP") == UDP_ERROR) {
-	// 	fprintf(stderr, ERR_COLOR "%s:%d in %s(): udp_add_protocol() error\n" NONE, __FILE__,
-	// 			__LINE__, __func__);
-	// 	return DHCP_ERROR_NULL;
-	// }
-
 	// Initialize the option list
 	dhcp_op_init(&dhcp_op_list);
 
@@ -113,8 +108,15 @@ netdevice_t *dhcp_init() {
 
 /**
  * Send a DHCP Discover message
+ * @return 0 on success,
+ * DHCP_ERROR if there's still a conversation
  */
-void dhcp_discover(const byte *my_mac) {
+int dhcp_discover(const byte *my_mac) {
+	// Return if there is still a conversation going
+	if (*(u_int *)dhcp_req_que.xid_waiting != 0) {
+		return DHCP_ERROR;
+	}
+
 	dhcp_hdr_t header;	 // DHCP header to send
 
 	/**
@@ -163,7 +165,7 @@ void dhcp_discover(const byte *my_mac) {
 	// Send out the DHCP discover
 	dhcp_send(DHCP_MSG.DISCOVER, buf, dhcp_discover_len);
 
-	return;
+	return 0;
 }
 
 /**
@@ -305,9 +307,10 @@ void dhcp_client_main(const byte *dhcp_msg, u_int msg_len) {
 #endif
 
 	set_ack_info_my_ip(header.yiaddr);
+	set_chaddr(header.chaddr);
+
 	while (*op_it != DHCP_OP.End) {
 		op_it += dhcp_op_list[*op_it].handler(op_it);
-		// printf("%d\n", *op_it);
 	}
 	dhcp_op_list[*op_it].handler(op_it);
 
