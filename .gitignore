@@ -1,9 +1,9 @@
 
 # configuration of vscode
-.vscode/*
+.vscode
 
 # object files
-build/*
+build
 
 # executable
 main

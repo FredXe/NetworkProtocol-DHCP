@@ -29,6 +29,13 @@ typedef struct {
 	two_bytes udp_len;			// Length of UDP datagram
 } udp_pseudo_hdr_t;				// UDP pseudo header format
 
+typedef struct {
+	byte src_ip[IP_ADDR_LEN];	// Source IP address
+	two_bytes src_port;			// Source port
+	byte dst_ip[IP_ADDR_LEN];	// Destination IP address
+	two_bytes dst_port;			// Destination port
+} udp_param_t;
+
 #define SERVICE_NAME_LEN 64
 typedef struct udp_protocol udp_protocol_t;
 
@@ -48,8 +55,7 @@ extern udp_pseudo_hdr_t udp_pseudo_hdr_maker(const byte *src_ip, const byte *dst
 extern udp_hdr_t udp_hdr_maker(two_bytes src_port, two_bytes dst_port, two_bytes length);
 extern const udp_protocol_t *udp_search_proto(two_bytes port);
 extern int udp_add_protocol(two_bytes port, const udp_handler callback, const char *service_name);
-extern int udp_send(udp_pseudo_hdr_t pseudo_hdr, udp_hdr_t udp_hdr, const byte *data,
-					u_int data_len);
+extern int udp_send(udp_param_t udp_param, const byte *data, u_int data_len);
 extern void udp_main(const byte *udp_datagram, u_int datagram_len);
 extern netdevice_t *udp_init();
 

@@ -5,6 +5,93 @@
 
 #include "ip.h"
 
+/**
+ * This #if preprocess block is import
+ * from https://github.com/nuk-icslab/csc521.git
+ * @lib/src/util.c
+ */
+#ifndef FG_OS_POSIX
+#define FG_OS_POSIX 1
+#endif	 // FG_OS_POSIX
+#if (FG_OS_POSIX == 1)
+#include <errno.h>
+#include <sys/select.h>
+
+/*
+ * readready() - check whether read ready for given file descriptor
+ *	. return non-negative if ready, 0 if not ready, negative on errors
+ */
+int readready() {
+	fd_set map;
+	int fd = 0; /* stdin */
+	int ret;
+	struct timeval _zerotimeval = {0, 0};
+
+	do {
+		FD_ZERO(&map);
+		FD_SET(fd, &map);
+		ret = select(fd + 1, &map, NULL, NULL, &_zerotimeval);
+		if (ret >= 0)
+			return ret;
+	} while (errno == EINTR);
+	return ret;
+}
+
+#else
+int readready() {
+	extern int _kbhit();
+	return _kbhit();
+}
+#endif /* FG_OS_POSIX */
+
+ipv4_info_t MY_IPV4_INFO;
+byte MY_MAC_ADDR[ETH_ADDR_LEN];
+
+/**
+ * Get the MAC address by looking up
+ * '/sys/class/net/(dev)/address'
+ * @param device Specify the interface
+ * @return Host MAC address on success,
+ * NETDEVICE_ERROR_NULL on error
+ */
+const byte *set_my_mac(const netdevice_t *device) {
+
+	char addr_file_name[256] = "/sys/class/net/";	// MAC address's file name on system
+
+	// Append device name to file name
+	strcat(addr_file_name, device->device_name);
+	strcat(addr_file_name, "/address");
+
+	char MAC_addr_str[18];	 // Buffer for the file reading
+
+	// Open the file with read mode
+	FILE *addr_file = fopen(addr_file_name, "r");
+
+	// Return NETDEVICE_ERROR_NULL is fopen() failed
+	if (addr_file == NULL) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): fopen(): error on open file\n" NONE, __FILE__,
+				__LINE__, __func__);
+		goto err_out;
+	}
+
+	// Read the file
+	if (fscanf(addr_file, "%s", MAC_addr_str) < 0) {
+		fprintf(stderr, ERR_COLOR "%s:%d in %s(): fscanf(): error on read file\n" NONE, __FILE__,
+				__LINE__, __func__);
+		goto err_out;
+	}
+	fclose(addr_file);
+
+	memcpy(MY_MAC_ADDR, string_to_eth_addr(MAC_addr_str), ETH_ADDR_LEN);
+
+	// Transfer string into byte array
+	return MY_MAC_ADDR;
+
+err_out:
+	fclose(addr_file);
+	return NETDEVICE_ERROR_NULL;
+}
+
 const byte *get_my_ip(const netdevice_t *device) {
 	return string_to_ip_addr("192.168.1.116");
 }
@@ -14,7 +101,8 @@ const int get_my_ip_info(ipv4_info_t *info) {
 	IP_COPY(info->gateway_d, string_to_ip_addr("192.168.1.1"));
 	IP_COPY(info->dns_server, string_to_ip_addr("192.168.1.10"));
 	IP_COPY(info->subnet, string_to_ip_addr("192.168.1.0"));
-	info->subnet_mask = 24;
+
+	// IP_COPY(info->subnet_mask, string_to_ip_addr("192.168.1.0"));
 	return 0;
 }
 
@@ -130,6 +218,11 @@ void print_data(const byte *data, const u_int data_len) {
  */
 two_bytes swap16(two_bytes in) {
 	return ((in << 8) | (in >> 8));
+}
+
+u_int swap32(u_int in) {
+	byte *it = (byte *)&in;
+	return (u_int)((it[0] << 24) | (it[1] << 16) | (it[2] << 8) | it[3]);
 }
 
 /**

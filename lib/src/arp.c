@@ -27,7 +27,7 @@ static netdevice_t *default_device = NULL;
 
 // Definition of ARP private method
 static const byte *arp_look_up(const byte *ip_addr);
-static void arp_table_add(byte *ip_addr, byte *mac_addr);
+static void arp_table_add(const byte *ip_addr, const byte *mac_addr);
 
 #if (DEBUG_ARP == 1)
 static const char *arp_op_to_string(two_bytes op);
@@ -70,6 +70,10 @@ netdevice_t *arp_init() {
 		return ARP_ERROR_NULL;
 	}
 
+	set_my_mac(default_device);
+
+	arp_table_add(string_to_ip_addr("255.255.255.255"), ETH_BROADCAST_ADDR);
+
 	return default_device;
 }
 
@@ -84,7 +88,7 @@ int arp_request(const netdevice_t *device, const byte *dst_ip_a) {
 
 	// Build up Ethernet header
 	memcpy(eth_hdr.eth_dst, ETH_BROADCAST_ADDR, ETH_ADDR_LEN);
-	memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+	memcpy(eth_hdr.eth_src, MY_MAC_ADDR, ETH_ADDR_LEN);
 	eth_hdr.eth_type = ETH_ARP;
 
 	arp_t arp_pkt;	 // ARP request packet
@@ -95,8 +99,8 @@ int arp_request(const netdevice_t *device, const byte *dst_ip_a) {
 	arp_pkt.hdr_addr_len = ETH_ADDR_LEN;
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REQUEST;
-	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
-	memcpy(arp_pkt.src_ip_addr, get_my_ip(device), IP_ADDR_LEN);
+	memcpy(arp_pkt.src_eth_addr, MY_MAC_ADDR, ETH_ADDR_LEN);
+	memcpy(arp_pkt.src_ip_addr, MY_IPV4_INFO.my_ip_addr, IP_ADDR_LEN);
 	memset(arp_pkt.dst_eth_addr, 0, ETH_ADDR_LEN);
 	memcpy(arp_pkt.dst_ip_addr, dst_ip_a, IP_ADDR_LEN);
 
@@ -134,7 +138,7 @@ int arp_reply(const netdevice_t *device, const byte *dst_eth_addr, const byte *d
 
 	// Build up Ethernet header
 	memcpy(eth_hdr.eth_dst, dst_eth_addr, ETH_ADDR_LEN);
-	memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+	memcpy(eth_hdr.eth_src, MY_MAC_ADDR, ETH_ADDR_LEN);
 	eth_hdr.eth_type = ETH_ARP;
 
 	arp_t arp_pkt;	 // ARP request packet
@@ -145,8 +149,8 @@ int arp_reply(const netdevice_t *device, const byte *dst_eth_addr, const byte *d
 	arp_pkt.hdr_addr_len = ETH_ADDR_LEN;
 	arp_pkt.ip_addr_len = IP_ADDR_LEN;
 	arp_pkt.op = ARP_OP_REPLY;
-	memcpy(arp_pkt.src_eth_addr, netdevice_get_my_mac(device), ETH_ADDR_LEN);
-	memcpy(arp_pkt.src_ip_addr, get_my_ip(device), IP_ADDR_LEN);
+	memcpy(arp_pkt.src_eth_addr, MY_MAC_ADDR, ETH_ADDR_LEN);
+	memcpy(arp_pkt.src_ip_addr, MY_IPV4_INFO.my_ip_addr, IP_ADDR_LEN);
 	memcpy(arp_pkt.dst_eth_addr, dst_eth_addr, ETH_ADDR_LEN);
 	memcpy(arp_pkt.dst_ip_addr, dst_ip_addr, IP_ADDR_LEN);
 
@@ -252,7 +256,7 @@ int arp_send(netdevice_t *device, const byte *dst_ip_addr, const two_bytes eth_t
 
 		// Build up the Ethernet header
 		memcpy(eth_hdr.eth_dst, arp_look_up(dst_ip_addr), ETH_ADDR_LEN);
-		memcpy(eth_hdr.eth_src, netdevice_get_my_mac(device), ETH_ADDR_LEN);
+		memcpy(eth_hdr.eth_src, MY_MAC_ADDR, ETH_ADDR_LEN);
 		eth_hdr.eth_type = eth_type;
 
 		// Send the packet, return ARP_ERROR if netdevice_xmit() on error
@@ -319,7 +323,7 @@ const byte *arp_look_up(const byte *ip_addr) {
  * @param ip_addr IP address
  * @param mac_addr MAC address
  */
-void arp_table_add(byte *ip_addr, byte *mac_addr) {
+void arp_table_add(const byte *ip_addr, const byte *mac_addr) {
 	arp_table_n = (arp_table_n + 1) % MAX_ARPIP_N;
 	memcpy(arp_table[arp_table_n].ip_addr, ip_addr, IP_ADDR_LEN);
 	memcpy(arp_table[arp_table_n].mac_addr, mac_addr, ETH_ADDR_LEN);

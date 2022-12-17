@@ -10,6 +10,7 @@
 #define MTU			 1500	// Ethernet Maximum Transmission Unit
 #define MIN_ETH_LEN	 60		// Minimal length of Ethernet frame
 #define CAP_TIMEOUT	 100	// Caption timeout (ms)
+#define ETH_HDR_TYPE 0x01	// Hardware type of Ethernet
 
 #define NETDEVICE_ERROR		 -1		// Netdevice common error
 #define NETDEVICE_ERROR_NULL NULL	// Netdevice common error with NULL pointer
@@ -18,6 +19,8 @@
  * Script for allocate an eth address
  */
 #define ETH_ALLOC(addr) byte *addr = (byte *)calloc(ETH_ADDR_LEN, sizeof(byte))
+
+#define ETH_COPY(dst, src) memcpy(dst, src, ETH_ADDR_LEN)
 
 typedef struct netdevice netdevice_t;
 typedef struct protocol protocol_t;
@@ -63,6 +66,5 @@ extern int netdevice_xmit(const netdevice_t *device, const eth_hdr_t *eth_hdr, c
 						  const u_int payload_len);
 extern int netdevice_rx(netdevice_t *netdevice);
 extern void netdevice_close(netdevice_t *device);
-extern const byte *netdevice_get_my_mac(const netdevice_t *device);
 
 #endif
